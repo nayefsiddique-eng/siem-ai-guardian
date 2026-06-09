@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import Sidebar from "./components/dashboard/Sidebar";
+﻿import { useState } from "react";
+import Sidebar from "./components/layout/Sidebar";
+import Topbar from "./components/layout/Topbar";
 import DashboardHome from "./components/dashboard/DashboardHome";
 import AlertsView from "./components/alerts/AlertsView";
 import LogsView from "./components/logs/LogsView";
@@ -7,18 +8,44 @@ import AnalysisView from "./components/analysis/AnalysisView";
 import { SiemProvider } from "./hooks/useSiem";
 
 export default function App() {
-  const [activeView, setActiveView] = useState("dashboard");
+  const [view, setView] = useState("dashboard");
+
+  const views = {
+    dashboard: <DashboardHome />,
+    alerts:    <AlertsView />,
+    logs:      <LogsView />,
+    analysis:  <AnalysisView />,
+  };
 
   return (
     <SiemProvider>
-      <div className="flex h-screen bg-gray-950 text-gray-100 overflow-hidden font-mono">
-        <Sidebar activeView={activeView} setActiveView={setActiveView} />
-        <main className="flex-1 overflow-auto">
-          {activeView === "dashboard" && <DashboardHome />}
-          {activeView === "alerts" && <AlertsView />}
-          {activeView === "logs" && <LogsView />}
-          {activeView === "analysis" && <AnalysisView />}
-        </main>
+      <div className="scanline-overlay" />
+      <div style={{
+        display: "flex",
+        height: "100vh",
+        overflow: "hidden",
+        background: "var(--bg-base)",
+      }}>
+        <Sidebar activeView={view} onNavigate={setView} />
+        <div style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          minWidth: 0,
+        }}>
+          <Topbar activeView={view} />
+          <main style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: "24px",
+            background: "var(--bg-base)",
+          }}>
+            <div className="fade-in" key={view}>
+              {views[view]}
+            </div>
+          </main>
+        </div>
       </div>
     </SiemProvider>
   );

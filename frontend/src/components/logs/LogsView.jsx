@@ -1,204 +1,270 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
-const SEVERITY_DOT = {
-  critical: "bg-red-500",
-  high:     "bg-orange-500",
-  medium:   "bg-yellow-500",
-  low:      "bg-green-500",
+const SEV_COLOR = {
+  critical: "var(--severity-critical)",
+  high:     "var(--severity-high)",
+  medium:   "var(--severity-medium)",
+  low:      "var(--severity-low)",
+  info:     "var(--text-muted)",
 };
 
+const TEST_EVENTS = [
+  {
+    label: "Brute Force",
+    payload: {
+      source_ip: "10.0.0.99", dest_ip: "192.168.1.1",
+      event_type: "failed_login", severity: "high",
+      hostname: "auth-server-01", username: "admin",
+      raw_message: "Failed password for admin from 10.0.0.99 port 54321 ssh2",
+    },
+  },
+  {
+    label: "Port Scan",
+    payload: {
+      source_ip: "203.0.113.42", dest_ip: "10.10.10.5",
+      event_type: "port_scan", severity: "medium",
+      hostname: "firewall-01", username: "",
+      raw_message: "Multiple connection attempts detected from 203.0.113.42",
+    },
+  },
+  {
+    label: "Priv Escalation",
+    payload: {
+      source_ip: "192.168.1.55", dest_ip: "192.168.1.1",
+      event_type: "privilege_escalation", severity: "critical",
+      hostname: "workstation-07", username: "jdoe",
+      raw_message: "sudo su root executed by jdoe — UAC bypass attempted",
+    },
+  },
+  {
+    label: "Normal Login",
+    payload: {
+      source_ip: "192.168.1.10", dest_ip: "192.168.1.100",
+      event_type: "successful_login", severity: "low",
+      hostname: "dc-01", username: "svc_account",
+      raw_message: "Accepted publickey for svc_account from 192.168.1.10",
+    },
+  },
+];
+
+function LogRow({ log }) {
+  const sev = (log.severity || "info").toLowerCase();
+  const color = SEV_COLOR[sev] || "var(--text-muted)";
+
+  return (
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "72px 110px 110px 80px 1fr",
+      alignItems: "center",
+      gap: "12px",
+      padding: "8px 16px",
+      borderBottom: "1px solid var(--border-subtle)",
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: "11px",
+    }}
+    onMouseEnter={e => e.currentTarget.style.background = "var(--bg-elevated)"}
+    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+    >
+      <span style={{ color, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+        {sev}
+      </span>
+      <span style={{ color: "var(--text-muted)" }}>
+        {log.source_ip || "—"}
+      </span>
+      <span style={{ color: "var(--text-muted)" }}>
+        {log.dest_ip || "—"}
+      </span>
+      <span style={{ color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {log.event_type || "—"}
+      </span>
+      <span style={{
+        color: "var(--text-secondary)",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        fontSize: "10px",
+      }}>
+        {log.raw_message || "—"}
+      </span>
+    </div>
+  );
+}
+
 export default function LogsView() {
-  const { apiBase, ingestLog } = useSiem();
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ source_ip: "", event_type: "", severity: "" });
-  const [showIngest, setShowIngest] = useState(false);
-  const [ingestForm, setIngestForm] = useState({
-    source_ip: "192.168.1.100",
-    event_type: "failed_login",
-    severity: "medium",
-    hostname: "web-server-01",
-    username: "admin",
-    log_source: "linux",
-    raw_message: "",
-  });
-  const [ingestStatus, setIngestStatus] = useState(null);
+  const { logs, fetchLogs, ingestLog } = useSiem();
+  const [injecting, setInjecting] = useState(null);
+  const bottomRef = useRef(null);
 
-  const fetchLogs = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ limit: 200 });
-      if (filters.source_ip) params.set("source_ip", filters.source_ip);
-      if (filters.event_type) params.set("event_type", filters.event_type);
-      if (filters.severity) params.set("severity", filters.severity);
+  useEffect(() => { fetchLogs(); }, []);
 
-      const res = await fetch(`${apiBase}/api/logs?${params}`);
-      const data = await res.json();
-      setLogs(data.logs || []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, [apiBase, filters]);
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [logs]);
 
-  useEffect(() => { fetchLogs(); }, [fetchLogs]);
-
-  const handleIngest = async () => {
-    setIngestStatus("sending");
-    try {
-      const result = await ingestLog(ingestForm);
-      setIngestStatus(result.alert_generated ? "alert" : "ok");
-      fetchLogs();
-    } catch (e) {
-      setIngestStatus("error");
-    }
+  const handleInject = async (evt) => {
+    setInjecting(evt.label);
+    await ingestLog(evt.payload);
+    await fetchLogs();
+    setInjecting(null);
   };
 
   return (
-    <div className="p-6 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-100">Log Stream</h1>
-          <p className="text-xs text-gray-500 mt-0.5">{logs.length} entries</p>
-        </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
+      {/* Inject toolbar */}
+      <div style={{
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "8px",
+        padding: "14px 16px",
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        flexWrap: "wrap",
+      }}>
+        <span style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: "9px",
+          color: "var(--text-muted)",
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+          marginRight: "4px",
+        }}>
+          Inject Test Event
+        </span>
+        {TEST_EVENTS.map(evt => (
+          <button
+            key={evt.label}
+            onClick={() => handleInject(evt)}
+            disabled={injecting === evt.label}
+            style={{
+              padding: "6px 13px",
+              borderRadius: "5px",
+              border: "1px solid var(--border-default)",
+              background: injecting === evt.label ? "var(--bg-elevated)" : "transparent",
+              color: injecting === evt.label ? "var(--text-muted)" : "var(--text-secondary)",
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "10px",
+              letterSpacing: "0.06em",
+              cursor: injecting === evt.label ? "not-allowed" : "pointer",
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={e => {
+              if (injecting !== evt.label) {
+                e.currentTarget.style.borderColor = "var(--border-strong)";
+                e.currentTarget.style.color = "var(--text-primary)";
+              }
+            }}
+            onMouseLeave={e => {
+              if (injecting !== evt.label) {
+                e.currentTarget.style.borderColor = "var(--border-default)";
+                e.currentTarget.style.color = "var(--text-secondary)";
+              }
+            }}
+          >
+            {injecting === evt.label ? "Injecting…" : `+ ${evt.label}`}
+          </button>
+        ))}
         <button
-          onClick={() => setShowIngest(!showIngest)}
-          className="text-xs px-3 py-1.5 bg-cyan-900/50 text-cyan-400 border border-cyan-800 rounded hover:bg-cyan-900 transition-colors"
+          onClick={fetchLogs}
+          style={{
+            marginLeft: "auto",
+            padding: "6px 13px",
+            borderRadius: "5px",
+            border: "1px solid rgba(34,211,238,0.25)",
+            background: "rgba(34,211,238,0.06)",
+            color: "var(--accent-cyan)",
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "10px",
+            letterSpacing: "0.08em",
+            cursor: "pointer",
+          }}
         >
-          + Ingest Test Log
+          ↻ Refresh
         </button>
       </div>
 
-      {/* Test log ingestor */}
-      {showIngest && (
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <div className="text-xs text-cyan-500 uppercase tracking-wider mb-3">Inject Test Log Event</div>
-          <div className="grid grid-cols-2 gap-3">
-            {Object.entries(ingestForm).map(([key, val]) => (
-              key === "raw_message" ? (
-                <div key={key} className="col-span-2">
-                  <label className="text-xs text-gray-500 block mb-1">{key}</label>
-                  <input
-                    className="w-full bg-gray-800 border border-gray-700 text-gray-200 text-xs rounded px-2 py-1.5 font-mono"
-                    value={val}
-                    onChange={e => setIngestForm(f => ({ ...f, [key]: e.target.value }))}
-                    placeholder="Optional raw log message..."
-                  />
-                </div>
-              ) : (
-                <div key={key}>
-                  <label className="text-xs text-gray-500 block mb-1">{key}</label>
-                  <input
-                    className="w-full bg-gray-800 border border-gray-700 text-gray-200 text-xs rounded px-2 py-1.5 font-mono"
-                    value={val}
-                    onChange={e => setIngestForm(f => ({ ...f, [key]: e.target.value }))}
-                  />
-                </div>
-              )
-            ))}
-          </div>
-
-          {/* Quick presets */}
-          <div className="mt-3 flex gap-2 flex-wrap">
-            <span className="text-xs text-gray-600">Presets:</span>
-            {[
-              { label: "Brute Force", event_type: "failed_login", source_ip: "10.0.0.55" },
-              { label: "Port Scan", event_type: "port_probe", source_ip: "172.16.0.1", destination_port: "8080" },
-              { label: "Sudo Escalation", event_type: "privilege_event", raw_message: "sudo su root executed by user" },
-              { label: "After-Hours Login", event_type: "successful_login", source_ip: "203.0.113.42" },
-            ].map(preset => (
-              <button
-                key={preset.label}
-                onClick={() => setIngestForm(f => ({ ...f, ...preset }))}
-                className="text-xs px-2 py-0.5 rounded bg-gray-800 text-gray-400 hover:text-gray-200 border border-gray-700"
-              >
-                {preset.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-3 flex items-center gap-3">
-            <button
-              onClick={handleIngest}
-              disabled={ingestStatus === "sending"}
-              className="text-xs px-4 py-1.5 bg-cyan-600 text-white rounded hover:bg-cyan-700 transition-colors disabled:opacity-50"
-            >
-              {ingestStatus === "sending" ? "Sending..." : "Send Log"}
-            </button>
-            {ingestStatus === "ok" && <span className="text-xs text-green-400">✓ Ingested (no alert)</span>}
-            {ingestStatus === "alert" && <span className="text-xs text-orange-400">⚠ Ingested — Alert generated!</span>}
-            {ingestStatus === "error" && <span className="text-xs text-red-400">✗ Failed — check backend</span>}
-          </div>
-        </div>
-      )}
-
-      {/* Filters */}
-      <div className="flex gap-2 items-center">
-        {["source_ip", "event_type"].map(key => (
-          <input
-            key={key}
-            placeholder={key.replace("_", " ")}
-            value={filters[key]}
-            onChange={e => setFilters(f => ({ ...f, [key]: e.target.value }))}
-            className="bg-gray-900 border border-gray-800 text-gray-300 text-xs rounded px-2 py-1.5 placeholder-gray-700 font-mono w-36"
-          />
-        ))}
-        <select
-          value={filters.severity}
-          onChange={e => setFilters(f => ({ ...f, severity: e.target.value }))}
-          className="bg-gray-900 border border-gray-800 text-gray-300 text-xs rounded px-2 py-1.5"
-        >
-          <option value="">All Severity</option>
-          <option value="critical">Critical</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </select>
-        <button onClick={fetchLogs} className="text-xs text-gray-500 hover:text-gray-300 transition-colors px-2">↺</button>
-      </div>
-
-      {/* Log table */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
-        <div className="grid grid-cols-12 text-xs text-gray-600 px-4 py-2 border-b border-gray-800 uppercase tracking-wider">
-          <span className="col-span-1">Sev</span>
-          <span className="col-span-2">Timestamp</span>
-          <span className="col-span-2">Source IP</span>
-          <span className="col-span-2">Event Type</span>
-          <span className="col-span-2">Host</span>
-          <span className="col-span-3">Message</span>
+      {/* Log stream */}
+      <div style={{
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "8px",
+        overflow: "hidden",
+      }}>
+        {/* Table header */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "72px 110px 110px 80px 1fr",
+          gap: "12px",
+          padding: "9px 16px",
+          background: "var(--bg-elevated)",
+          borderBottom: "1px solid var(--border-subtle)",
+        }}>
+          {["Severity", "Source IP", "Dest IP", "Type", "Message"].map(h => (
+            <span key={h} style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "9px",
+              color: "var(--text-muted)",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+            }}>
+              {h}
+            </span>
+          ))}
         </div>
 
-        <div className="font-mono text-xs max-h-[60vh] overflow-y-auto">
-          {loading ? (
-            <div className="text-center py-8 text-gray-700">Loading...</div>
-          ) : logs.length === 0 ? (
-            <div className="text-center py-12 text-gray-700">
-              No logs yet — use "Ingest Test Log" above or send logs to POST /api/logs/ingest
+        <div style={{ maxHeight: "520px", overflowY: "auto" }}>
+          {(!logs || logs.length === 0) ? (
+            <div style={{
+              padding: "40px",
+              textAlign: "center",
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "11px",
+              color: "var(--text-muted)",
+            }}>
+              No logs yet · inject a test event to begin
             </div>
           ) : (
-            logs.map(log => (
-              <div
-                key={log.id}
-                className="grid grid-cols-12 px-4 py-2 border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors"
-              >
-                <span className="col-span-1 flex items-center">
-                  <span className={`w-2 h-2 rounded-full ${SEVERITY_DOT[log.severity] || "bg-gray-600"}`} />
-                </span>
-                <span className="col-span-2 text-gray-600 truncate">
-                  {new Date(log.timestamp).toLocaleTimeString()}
-                </span>
-                <span className="col-span-2 text-cyan-500 truncate">{log.source_ip}</span>
-                <span className="col-span-2 text-yellow-600 truncate">{log.event_type}</span>
-                <span className="col-span-2 text-gray-400 truncate">{log.hostname || "—"}</span>
-                <span className="col-span-3 text-gray-600 truncate">{log.raw_message || log.username || "—"}</span>
-              </div>
+            [...logs].reverse().map((log, i) => (
+              <LogRow key={log.id || i} log={log} />
             ))
           )}
+          <div ref={bottomRef} />
+        </div>
+
+        <div style={{
+          padding: "8px 16px",
+          borderTop: "1px solid var(--border-subtle)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}>
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "10px",
+            color: "var(--text-muted)",
+          }}>
+            {logs?.length ?? 0} events indexed
+          </span>
+          <span style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "5px",
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "10px",
+            color: "var(--severity-low)",
+          }}>
+            <span style={{
+              width: "5px", height: "5px", borderRadius: "50%",
+              background: "var(--severity-low)",
+              boxShadow: "0 0 5px rgba(52,211,153,0.8)",
+            }} />
+            Live
+          </span>
         </div>
       </div>
     </div>
   );
 }
+

@@ -1,143 +1,260 @@
-import { useState, useEffect } from "react";
+﻿import { useEffect, useState } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
-const SEVERITY_STYLES = {
-  critical: "bg-red-900/40 text-red-400 border-red-800",
-  high:     "bg-orange-900/40 text-orange-400 border-orange-800",
-  medium:   "bg-yellow-900/40 text-yellow-400 border-yellow-800",
-  low:      "bg-green-900/40 text-green-400 border-green-800",
+const SEV_COLOR = {
+  critical: "var(--severity-critical)",
+  high:     "var(--severity-high)",
+  medium:   "var(--severity-medium)",
+  low:      "var(--severity-low)",
 };
 
-const STATUS_STYLES = {
-  open:            "text-red-400",
-  investigating:   "text-yellow-400",
-  resolved:        "text-green-400",
-  false_positive:  "text-gray-500",
+const STATUS_COLOR = {
+  open:            { color: "var(--severity-high)",    bg: "rgba(251,146,60,0.08)",    border: "rgba(251,146,60,0.25)" },
+  investigating:   { color: "var(--accent-cyan)",      bg: "rgba(34,211,238,0.08)",    border: "rgba(34,211,238,0.25)" },
+  resolved:        { color: "var(--severity-low)",     bg: "rgba(52,211,153,0.08)",    border: "rgba(52,211,153,0.25)" },
+  false_positive:  { color: "var(--text-muted)",       bg: "rgba(75,85,99,0.12)",      border: "rgba(75,85,99,0.30)" },
 };
 
-function AlertCard({ alert, onStatusChange, onAnalyze }) {
-  const [expanding, setExpanding] = useState(false);
+function StatusBadge({ status }) {
+  const s = STATUS_COLOR[status] || STATUS_COLOR.open;
+  return (
+    <span style={{
+      display: "inline-block",
+      padding: "2px 8px",
+      borderRadius: "4px",
+      border: `1px solid ${s.border}`,
+      background: s.bg,
+      color: s.color,
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: "9px",
+      letterSpacing: "0.1em",
+      textTransform: "uppercase",
+    }}>
+      {status?.replace("_", " ") || "open"}
+    </span>
+  );
+}
+
+function AlertCard({ alert, onAnalyze, onStatusChange }) {
+  const [expanded, setExpanded] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [analysis, setAnalysis] = useState(null);
+  const sev = (alert.severity || "low").toLowerCase();
+  const color = SEV_COLOR[sev] || "var(--text-muted)";
 
   const handleAnalyze = async () => {
     setAnalyzing(true);
-    try {
-      const result = await onAnalyze(alert.id);
-      setAnalysis(result.analysis);
-      setExpanding(true);
-    } catch (e) {
-      alert("AI analysis failed — check Gemini API key in backend .env");
-    } finally {
-      setAnalyzing(false);
-    }
-  };
-
-  const aiData = analysis || {
-    threat_summary: alert.ai_analysis,
-    risk_level: alert.ai_risk_level,
-    recommendations: alert.ai_recommendations,
+    await onAnalyze(alert.id);
+    setAnalyzing(false);
   };
 
   return (
-    <div className={`bg-gray-900 rounded-lg border ${SEVERITY_STYLES[alert.severity] || "border-gray-800"} overflow-hidden`}>
-      {/* Header */}
-      <div className="p-4">
-        <div className="flex items-start gap-3">
-          <span className={`text-xs px-2 py-0.5 rounded border uppercase font-bold flex-shrink-0 ${SEVERITY_STYLES[alert.severity] || "border-gray-700 text-gray-400"}`}>
-            {alert.severity}
-          </span>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm text-gray-100 font-medium">{alert.title}</div>
-            <div className="text-xs text-gray-500 mt-0.5 line-clamp-2">{alert.description}</div>
-          </div>
-          <span className={`text-xs flex-shrink-0 ${STATUS_STYLES[alert.status] || "text-gray-500"}`}>
-            {alert.status}
-          </span>
-        </div>
+    <div style={{
+      background: "var(--bg-surface)",
+      border: "1px solid var(--border-subtle)",
+      borderLeft: `3px solid ${color}`,
+      borderRadius: "8px",
+      overflow: "hidden",
+      transition: "border-color 0.15s",
+    }}>
+      {/* Header row */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          padding: "14px 16px",
+          cursor: "pointer",
+        }}
+        onClick={() => setExpanded(e => !e)}
+      >
+        {/* Severity dot */}
+        <span style={{
+          width: "8px", height: "8px", borderRadius: "50%",
+          background: color,
+          flexShrink: 0,
+          boxShadow: sev === "critical" ? `0 0 8px ${color}` : "none",
+        }} />
 
-        {/* Meta row */}
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
-          <span className="font-mono text-cyan-500">{alert.source_ip}</span>
-          {alert.mitre_technique_id && (
-            <span className="text-purple-400">
-              {alert.mitre_technique_id} · {alert.mitre_technique_name}
-            </span>
-          )}
-          <span>{alert.mitre_tactic}</span>
-          <span className="ml-auto">{new Date(alert.created_at).toLocaleString()}</span>
-        </div>
+        {/* Title */}
+        <span style={{ flex: 1, fontSize: "13px", fontWeight: 500, color: "var(--text-primary)" }}>
+          {alert.title || alert.alert_type || "Unnamed Alert"}
+        </span>
 
-        {/* Actions */}
-        <div className="mt-3 flex items-center gap-2">
-          <button
-            onClick={handleAnalyze}
-            disabled={analyzing}
-            className="text-xs px-3 py-1 rounded bg-cyan-900/50 text-cyan-400 border border-cyan-800 hover:bg-cyan-900 transition-colors disabled:opacity-50"
-          >
-            {analyzing ? "Analyzing..." : "✦ AI Analysis"}
-          </button>
-          <button
-            onClick={() => setExpanding(!expanding)}
-            className="text-xs px-3 py-1 rounded bg-gray-800 text-gray-400 hover:text-gray-200 transition-colors"
-          >
-            {expanding ? "Collapse" : "Details"}
-          </button>
-          {alert.status === "open" && (
-            <button
-              onClick={() => onStatusChange(alert.id, "investigating")}
-              className="text-xs px-3 py-1 rounded bg-yellow-900/30 text-yellow-400 border border-yellow-900 hover:bg-yellow-900/50 transition-colors"
-            >
-              Investigate
-            </button>
-          )}
-          {alert.status === "investigating" && (
-            <button
-              onClick={() => onStatusChange(alert.id, "resolved")}
-              className="text-xs px-3 py-1 rounded bg-green-900/30 text-green-400 border border-green-900 hover:bg-green-900/50 transition-colors"
-            >
-              Resolve
-            </button>
-          )}
-          <button
-            onClick={() => onStatusChange(alert.id, "false_positive")}
-            className="text-xs px-2 py-1 text-gray-600 hover:text-gray-400 transition-colors"
-          >
-            False Positive
-          </button>
-        </div>
+        {/* MITRE tag */}
+        {alert.mitre_technique_id && (
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "9px",
+            color: "var(--accent-indigo)",
+            background: "rgba(99,102,241,0.08)",
+            border: "1px solid rgba(99,102,241,0.20)",
+            borderRadius: "4px",
+            padding: "2px 7px",
+            letterSpacing: "0.08em",
+          }}>
+            {alert.mitre_technique_id}
+          </span>
+        )}
+
+        <StatusBadge status={alert.status} />
+
+        <svg
+          width="12" height="12" viewBox="0 0 16 16" fill="none"
+          style={{
+            transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.2s",
+            color: "var(--text-muted)",
+            flexShrink: 0,
+          }}
+        >
+          <path d="M3 6L8 11L13 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
       </div>
 
-      {/* Expanded AI analysis */}
-      {expanding && aiData.threat_summary && (
-        <div className="border-t border-gray-800 p-4 bg-gray-950/50">
-          <div className="text-xs text-cyan-500 uppercase tracking-wider mb-3">✦ AI Analysis</div>
-          <div className="space-y-3">
-            <div>
-              <div className="text-xs text-gray-600 mb-1">Threat Summary</div>
-              <div className="text-sm text-gray-300">{aiData.threat_summary}</div>
+      {/* Expanded detail */}
+      {expanded && (
+        <div style={{
+          borderTop: "1px solid var(--border-subtle)",
+          padding: "16px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "14px",
+        }}>
+
+          {/* Meta grid */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "12px",
+          }}>
+            {[
+              ["Source IP",  alert.source_ip  || "—"],
+              ["Dest IP",    alert.dest_ip    || "—"],
+              ["Tactic",     alert.mitre_tactic || "—"],
+              ["Risk Level", alert.risk_level || "—"],
+              ["Confidence", alert.confidence != null ? `${alert.confidence}%` : "—"],
+              ["Attack Stage", alert.attack_stage || "—"],
+            ].map(([k, v]) => (
+              <div key={k}>
+                <div style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "9px",
+                  color: "var(--text-muted)",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  marginBottom: "3px",
+                }}>
+                  {k}
+                </div>
+                <div style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "11px",
+                  color: "var(--text-secondary)",
+                }}>
+                  {v}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* AI summary */}
+          {alert.threat_summary && (
+            <div style={{
+              background: "var(--bg-elevated)",
+              border: "1px solid var(--border-subtle)",
+              borderRadius: "6px",
+              padding: "12px 14px",
+            }}>
+              <div style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "9px",
+                color: "var(--accent-indigo)",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                marginBottom: "6px",
+              }}>
+                AI Threat Summary
+              </div>
+              <p style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                {alert.threat_summary}
+              </p>
             </div>
-            {aiData.risk_level && (
-              <div className="flex items-center gap-2">
-                <div className="text-xs text-gray-600">Risk Level:</div>
-                <span className={`text-xs px-2 py-0.5 rounded uppercase font-bold ${SEVERITY_STYLES[aiData.risk_level] || "text-gray-400"}`}>
-                  {aiData.risk_level}
-                </span>
+          )}
+
+          {/* Recommendations */}
+          {alert.recommendations && (
+            <div style={{
+              background: "var(--bg-elevated)",
+              border: "1px solid var(--border-subtle)",
+              borderRadius: "6px",
+              padding: "12px 14px",
+            }}>
+              <div style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "9px",
+                color: "var(--accent-cyan)",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                marginBottom: "6px",
+              }}>
+                Recommendations
               </div>
-            )}
-            {aiData.recommendations?.length > 0 && (
-              <div>
-                <div className="text-xs text-gray-600 mb-1">Recommendations</div>
-                <ul className="space-y-1">
-                  {aiData.recommendations.map((r, i) => (
-                    <li key={i} className="text-xs text-gray-300 flex gap-2">
-                      <span className="text-cyan-600 flex-shrink-0">→</span>
-                      {r}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+              <p style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                {alert.recommendations}
+              </p>
+            </div>
+          )}
+
+          {/* Action row */}
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+            <button
+              onClick={handleAnalyze}
+              disabled={analyzing}
+              style={{
+                padding: "7px 14px",
+                borderRadius: "6px",
+                border: "1px solid rgba(99,102,241,0.35)",
+                background: analyzing ? "var(--bg-elevated)" : "rgba(99,102,241,0.10)",
+                color: "var(--accent-indigo)",
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "10px",
+                letterSpacing: "0.08em",
+                cursor: analyzing ? "not-allowed" : "pointer",
+                transition: "all 0.15s",
+              }}
+            >
+              {analyzing ? "ANALYZING…" : "⚡ RUN AI ANALYSIS"}
+            </button>
+
+            {["investigating", "resolved", "false_positive"].map(st => (
+              <button
+                key={st}
+                onClick={() => onStatusChange(alert.id, st)}
+                style={{
+                  padding: "7px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid var(--border-default)",
+                  background: "transparent",
+                  color: "var(--text-muted)",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "10px",
+                  letterSpacing: "0.06em",
+                  cursor: "pointer",
+                  transition: "all 0.15s",
+                  textTransform: "uppercase",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = "var(--border-strong)";
+                  e.currentTarget.style.color = "var(--text-secondary)";
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = "var(--border-default)";
+                  e.currentTarget.style.color = "var(--text-muted)";
+                }}
+              >
+                → {st.replace("_", " ")}
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -146,68 +263,93 @@ function AlertCard({ alert, onStatusChange, onAnalyze }) {
 }
 
 export default function AlertsView() {
-  const { alerts, fetchAlerts, updateAlertStatus, triggerAiAnalysis, loading } = useSiem();
-  const [statusFilter, setStatusFilter] = useState("");
-  const [severityFilter, setSeverityFilter] = useState("");
+  const { alerts, fetchAlerts, analyzeAlert, updateAlertStatus } = useSiem();
+  const [filter, setFilter] = useState("all");
 
-  useEffect(() => {
-    const filters = {};
-    if (statusFilter) filters.status = statusFilter;
-    if (severityFilter) filters.severity = severityFilter;
-    fetchAlerts(filters);
-  }, [statusFilter, severityFilter]);
+  useEffect(() => { fetchAlerts(); }, []);
+
+  const filtered = (alerts || []).filter(a =>
+    filter === "all" ? true : a.status === filter
+  );
+
+  const FILTERS = ["all", "open", "investigating", "resolved", "false_positive"];
 
   return (
-    <div className="p-6 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-100">Alerts</h1>
-          <p className="text-xs text-gray-500 mt-0.5">{alerts.length} alerts shown</p>
-        </div>
-        <div className="flex gap-2">
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="bg-gray-800 border border-gray-700 text-gray-300 text-xs rounded px-2 py-1.5"
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
+      {/* Filter bar */}
+      <div style={{
+        display: "flex",
+        gap: "6px",
+        alignItems: "center",
+        padding: "14px 16px",
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "8px",
+      }}>
+        <span style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: "9px",
+          color: "var(--text-muted)",
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          marginRight: "6px",
+        }}>
+          Filter
+        </span>
+        {FILTERS.map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            style={{
+              padding: "5px 12px",
+              borderRadius: "5px",
+              border: `1px solid ${filter === f ? "rgba(99,102,241,0.4)" : "var(--border-subtle)"}`,
+              background: filter === f ? "rgba(99,102,241,0.10)" : "transparent",
+              color: filter === f ? "var(--accent-indigo)" : "var(--text-muted)",
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "10px",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              transition: "all 0.15s",
+            }}
           >
-            <option value="">All Statuses</option>
-            <option value="open">Open</option>
-            <option value="investigating">Investigating</option>
-            <option value="resolved">Resolved</option>
-            <option value="false_positive">False Positive</option>
-          </select>
-          <select
-            value={severityFilter}
-            onChange={e => setSeverityFilter(e.target.value)}
-            className="bg-gray-800 border border-gray-700 text-gray-300 text-xs rounded px-2 py-1.5"
-          >
-            <option value="">All Severities</option>
-            <option value="critical">Critical</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
-        </div>
+            {f.replace("_", " ")}
+          </button>
+        ))}
+        <span style={{
+          marginLeft: "auto",
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: "10px",
+          color: "var(--text-muted)",
+        }}>
+          {filtered.length} alert{filtered.length !== 1 ? "s" : ""}
+        </span>
       </div>
 
-      {/* Alert list */}
-      {loading && alerts.length === 0 ? (
-        <div className="text-center text-gray-600 py-16">Loading alerts...</div>
-      ) : alerts.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="text-4xl mb-3 text-gray-700">◈</div>
-          <div className="text-gray-600 text-sm">No alerts match your filters</div>
-          <div className="text-gray-700 text-xs mt-1">Try ingesting some test logs via the API</div>
+      {/* Alert cards */}
+      {filtered.length === 0 ? (
+        <div style={{
+          padding: "48px",
+          textAlign: "center",
+          color: "var(--text-muted)",
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: "12px",
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "8px",
+        }}>
+          No alerts in this category
         </div>
       ) : (
-        <div className="space-y-3">
-          {alerts.map(alert => (
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {filtered.map(a => (
             <AlertCard
-              key={alert.id}
-              alert={alert}
+              key={a.id}
+              alert={a}
+              onAnalyze={analyzeAlert}
               onStatusChange={updateAlertStatus}
-              onAnalyze={triggerAiAnalysis}
             />
           ))}
         </div>
@@ -215,3 +357,4 @@ export default function AlertsView() {
     </div>
   );
 }
+

@@ -1,216 +1,393 @@
-import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
-} from "recharts";
+﻿import { useEffect, useRef } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
-const SEVERITY_COLORS = {
-  critical: "#ef4444",
-  high:     "#f97316",
-  medium:   "#eab308",
-  low:      "#22c55e",
-};
-
-const ALERT_TYPE_COLORS = ["#06b6d4", "#8b5cf6", "#f97316", "#ec4899", "#22c55e"];
-
-function StatCard({ label, value, sub, accent = false }) {
+function StatCard({ label, value, sub, accent, glow }) {
   return (
-    <div className={`rounded-lg border p-4 ${accent
-      ? "bg-red-950/40 border-red-800/50"
-      : "bg-gray-900 border-gray-800"
-    }`}>
-      <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">{label}</div>
-      <div className={`text-3xl font-bold tabular-nums ${accent ? "text-red-400" : "text-gray-100"}`}>
+    <div style={{
+      background: "var(--bg-surface)",
+      border: `1px solid var(--border-subtle)`,
+      borderRadius: "10px",
+      padding: "20px 22px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "6px",
+      position: "relative",
+      overflow: "hidden",
+    }}>
+      <div style={{
+        position: "absolute",
+        top: 0, left: 0, right: 0,
+        height: "2px",
+        background: accent,
+        boxShadow: glow,
+        borderRadius: "10px 10px 0 0",
+      }} />
+      <span style={{
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: "9px",
+        letterSpacing: "0.14em",
+        color: "var(--text-muted)",
+        textTransform: "uppercase",
+      }}>
+        {label}
+      </span>
+      <span style={{
+        fontSize: "28px",
+        fontWeight: 700,
+        letterSpacing: "-1px",
+        color: "var(--text-primary)",
+        lineHeight: 1,
+      }}>
         {value ?? "—"}
-      </div>
-      {sub && <div className="text-xs text-gray-600 mt-1">{sub}</div>}
+      </span>
+      {sub && (
+        <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+          {sub}
+        </span>
+      )}
     </div>
   );
 }
 
-function SeverityBadge({ severity }) {
-  const colors = {
-    critical: "bg-red-900/50 text-red-400 border border-red-800",
-    high:     "bg-orange-900/50 text-orange-400 border border-orange-800",
-    medium:   "bg-yellow-900/50 text-yellow-400 border border-yellow-800",
-    low:      "bg-green-900/50 text-green-400 border border-green-800",
-  };
+function SeverityBar({ label, count, max, color }) {
+  const pct = max > 0 ? (count / max) * 100 : 0;
   return (
-    <span className={`text-xs px-2 py-0.5 rounded font-mono uppercase ${colors[severity] || "bg-gray-800 text-gray-400"}`}>
-      {severity}
-    </span>
+    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <span style={{
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: "10px",
+        color: "var(--text-muted)",
+        width: "56px",
+        textTransform: "uppercase",
+        letterSpacing: "0.08em",
+      }}>
+        {label}
+      </span>
+      <div style={{
+        flex: 1,
+        height: "4px",
+        background: "var(--bg-elevated)",
+        borderRadius: "2px",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          width: `${pct}%`,
+          height: "100%",
+          background: color,
+          borderRadius: "2px",
+          boxShadow: `0 0 6px ${color}99`,
+          transition: "width 0.6s ease",
+        }} />
+      </div>
+      <span style={{
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: "11px",
+        color: "var(--text-secondary)",
+        width: "24px",
+        textAlign: "right",
+      }}>
+        {count}
+      </span>
+    </div>
+  );
+}
+
+function AlertRow({ alert }) {
+  const SEV_COLOR = {
+    critical: "var(--severity-critical)",
+    high:     "var(--severity-high)",
+    medium:   "var(--severity-medium)",
+    low:      "var(--severity-low)",
+  };
+  const sev = (alert.severity || "low").toLowerCase();
+  const color = SEV_COLOR[sev] || "var(--text-muted)";
+
+  return (
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "90px 1fr 80px 90px",
+      alignItems: "center",
+      gap: "12px",
+      padding: "10px 16px",
+      borderBottom: "1px solid var(--border-subtle)",
+      transition: "background 0.12s",
+      cursor: "default",
+    }}
+    onMouseEnter={e => e.currentTarget.style.background = "var(--bg-elevated)"}
+    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+    >
+      <span style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "5px",
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: "10px",
+        color,
+        letterSpacing: "0.06em",
+        textTransform: "uppercase",
+      }}>
+        <span style={{
+          width: "5px", height: "5px", borderRadius: "50%",
+          background: color,
+          boxShadow: sev === "critical" ? `0 0 6px ${color}` : "none",
+          flexShrink: 0,
+        }} />
+        {sev}
+      </span>
+      <span style={{ fontSize: "12px", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {alert.title || alert.alert_type || "Unknown"}
+      </span>
+      <span style={{
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: "10px",
+        color: "var(--text-muted)",
+        textAlign: "right",
+      }}>
+        {alert.status || "open"}
+      </span>
+      <span style={{
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: "10px",
+        color: "var(--text-muted)",
+        textAlign: "right",
+      }}>
+        {alert.created_at ? new Date(alert.created_at).toLocaleTimeString() : "—"}
+      </span>
+    </div>
   );
 }
 
 export default function DashboardHome() {
-  const { stats, loading, error } = useSiem();
+  const { stats, alerts, fetchStats, fetchAlerts } = useSiem();
 
-  if (loading && !stats) {
-    return (
-      <div className="flex items-center justify-center h-full text-gray-500">
-        <div className="text-center">
-          <div className="text-2xl mb-2">◈</div>
-          <div className="text-sm">Loading SIEM data...</div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    fetchStats();
+    fetchAlerts();
+  }, []);
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center text-red-400">
-          <div className="text-2xl mb-2">⚠</div>
-          <div className="text-sm">Backend unreachable: {error}</div>
-          <div className="text-xs text-gray-600 mt-2">Make sure the FastAPI server is running on port 8000</div>
-        </div>
-      </div>
-    );
-  }
+  const s = stats || {};
+  const recentAlerts = (alerts || []).slice(0, 8);
 
-  const overview = stats?.overview || {};
-  const timeline = stats?.alerts_timeline || [];
-  const topIps = stats?.top_attacker_ips || [];
-  const recentAlerts = stats?.recent_alerts || [];
-  const alertTypes = Object.entries(stats?.alerts_by_type || {}).map(([name, value]) => ({ name, value }));
-  const severityData = Object.entries(stats?.alerts_by_severity || {}).map(([name, value]) => ({
-    name, value, fill: SEVERITY_COLORS[name] || "#6b7280"
-  }));
+  const sevCounts = {
+    critical: s.critical_alerts ?? 0,
+    high:     s.high_alerts     ?? 0,
+    medium:   s.medium_alerts   ?? 0,
+    low:      s.low_alerts      ?? 0,
+  };
+  const maxSev = Math.max(...Object.values(sevCounts), 1);
+
+  const typeCounts = s.alert_types || {};
+  const typeEntries = Object.entries(typeCounts).slice(0, 6);
+  const maxType = Math.max(...typeEntries.map(([, v]) => v), 1);
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-100 tracking-tight">Security Overview</h1>
-          <p className="text-xs text-gray-500 mt-0.5">AI-Powered SIEM — Real-time threat monitoring</p>
-        </div>
-        <div className="text-xs text-gray-600 font-mono">
-          {new Date().toLocaleString()}
-        </div>
-      </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Open Alerts" value={overview.open_alerts} sub="requiring attention" accent={overview.open_alerts > 0} />
-        <StatCard label="Critical (24h)" value={overview.critical_alerts_24h} sub="high + critical severity" accent={overview.critical_alerts_24h > 0} />
-        <StatCard label="Logs (24h)" value={overview.logs_last_24h?.toLocaleString()} sub={`${overview.total_logs?.toLocaleString()} total`} />
-        <StatCard label="Total Alerts" value={overview.total_alerts} sub="all time" />
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gap: "14px",
+      }}>
+        <StatCard
+          label="Total Alerts"
+          value={s.total_alerts ?? 0}
+          sub="all time"
+          accent="var(--accent-indigo)"
+          glow="0 0 12px rgba(99,102,241,0.5)"
+        />
+        <StatCard
+          label="Open Alerts"
+          value={s.open_alerts ?? 0}
+          sub="pending triage"
+          accent="var(--severity-high)"
+          glow="0 0 12px rgba(251,146,60,0.5)"
+        />
+        <StatCard
+          label="Logs Ingested"
+          value={s.total_logs ?? 0}
+          sub="indexed events"
+          accent="var(--accent-cyan)"
+          glow="0 0 12px rgba(34,211,238,0.4)"
+        />
+        <StatCard
+          label="Critical"
+          value={s.critical_alerts ?? 0}
+          sub="immediate action"
+          accent="var(--severity-critical)"
+          glow="0 0 12px rgba(244,63,94,0.5)"
+        />
       </div>
 
-      {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Timeline */}
-        <div className="lg:col-span-2 bg-gray-900 rounded-lg border border-gray-800 p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wider mb-4">Alert Timeline (7 Days)</div>
-          {timeline.length > 0 ? (
-            <ResponsiveContainer width="100%" height={180}>
-              <LineChart data={timeline}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                <XAxis dataKey="date" tick={{ fill: "#6b7280", fontSize: 11 }} />
-                <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
-                <Tooltip
-                  contentStyle={{ background: "#111827", border: "1px solid #374151", borderRadius: "6px" }}
-                  labelStyle={{ color: "#9ca3af" }}
-                  itemStyle={{ color: "#06b6d4" }}
-                />
-                <Line type="monotone" dataKey="count" stroke="#06b6d4" strokeWidth={2} dot={{ fill: "#06b6d4", r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-[180px] text-gray-700 text-sm">No alert data yet</div>
-          )}
+      {/* Middle row */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "14px",
+      }}>
+
+        {/* Severity breakdown */}
+        <div style={{
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "10px",
+          padding: "20px",
+        }}>
+          <div style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "9px",
+            letterSpacing: "0.14em",
+            color: "var(--text-muted)",
+            textTransform: "uppercase",
+            marginBottom: "18px",
+          }}>
+            Severity Distribution
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <SeverityBar label="Critical" count={sevCounts.critical} max={maxSev} color="var(--severity-critical)" />
+            <SeverityBar label="High"     count={sevCounts.high}     max={maxSev} color="var(--severity-high)" />
+            <SeverityBar label="Medium"   count={sevCounts.medium}   max={maxSev} color="var(--severity-medium)" />
+            <SeverityBar label="Low"      count={sevCounts.low}      max={maxSev} color="var(--severity-low)" />
+          </div>
         </div>
 
-        {/* Severity pie */}
-        <div className="bg-gray-900 rounded-lg border border-gray-800 p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wider mb-4">Severity Distribution</div>
-          {severityData.length > 0 ? (
-            <>
-              <ResponsiveContainer width="100%" height={140}>
-                <PieChart>
-                  <Pie data={severityData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} dataKey="value">
-                    {severityData.map((entry, i) => (
-                      <Cell key={i} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ background: "#111827", border: "1px solid #374151", borderRadius: "6px" }}
-                    itemStyle={{ color: "#9ca3af" }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="space-y-1 mt-2">
-                {severityData.map(d => (
-                  <div key={d.name} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full" style={{ background: d.fill }} />
-                      <span className="text-gray-400 capitalize">{d.name}</span>
-                    </div>
-                    <span className="text-gray-300 tabular-nums">{d.value}</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-[140px] text-gray-700 text-sm">No alerts yet</div>
-          )}
-        </div>
-      </div>
-
-      {/* Bottom row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Top attacker IPs */}
-        <div className="bg-gray-900 rounded-lg border border-gray-800 p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wider mb-4">Top Attacker IPs (24h)</div>
-          {topIps.length > 0 ? (
-            <div className="space-y-2">
-              {topIps.slice(0, 8).map((item, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <span className="text-gray-700 text-xs tabular-nums w-4">{i + 1}</span>
-                  <span className="text-cyan-400 font-mono text-xs flex-1">{item.ip}</span>
-                  <div className="flex-1 bg-gray-800 rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className="h-full bg-cyan-600 rounded-full"
-                      style={{ width: `${(item.count / topIps[0].count) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-gray-400 text-xs tabular-nums w-8 text-right">{item.count}</span>
-                </div>
-              ))}
+        {/* Alert types */}
+        <div style={{
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "10px",
+          padding: "20px",
+        }}>
+          <div style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "9px",
+            letterSpacing: "0.14em",
+            color: "var(--text-muted)",
+            textTransform: "uppercase",
+            marginBottom: "18px",
+          }}>
+            Detection Types
+          </div>
+          {typeEntries.length === 0 ? (
+            <div style={{ fontSize: "12px", color: "var(--text-muted)", paddingTop: "8px" }}>
+              No detections yet
             </div>
           ) : (
-            <div className="text-gray-700 text-sm text-center py-8">No log data yet</div>
-          )}
-        </div>
-
-        {/* Recent alerts */}
-        <div className="bg-gray-900 rounded-lg border border-gray-800 p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wider mb-4">Recent Alerts</div>
-          {recentAlerts.length > 0 ? (
-            <div className="space-y-2">
-              {recentAlerts.map(alert => (
-                <div key={alert.id} className="flex items-start gap-3 py-2 border-b border-gray-800 last:border-0">
-                  <SeverityBadge severity={alert.severity} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs text-gray-200 truncate">{alert.title}</div>
-                    <div className="text-xs text-gray-600 mt-0.5">
-                      {alert.mitre_technique_id && (
-                        <span className="text-purple-500">{alert.mitre_technique_id} · </span>
-                      )}
-                      {new Date(alert.created_at).toLocaleTimeString()}
-                    </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {typeEntries.map(([type, count]) => (
+                <div key={type} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: "10px",
+                    color: "var(--text-muted)",
+                    width: "130px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    letterSpacing: "0.04em",
+                  }}>
+                    {type.replace(/_/g, " ")}
+                  </span>
+                  <div style={{
+                    flex: 1,
+                    height: "4px",
+                    background: "var(--bg-elevated)",
+                    borderRadius: "2px",
+                    overflow: "hidden",
+                  }}>
+                    <div style={{
+                      width: `${(count / maxType) * 100}%`,
+                      height: "100%",
+                      background: "var(--accent-indigo)",
+                      borderRadius: "2px",
+                      boxShadow: "0 0 6px rgba(99,102,241,0.5)",
+                      transition: "width 0.6s ease",
+                    }} />
                   </div>
-                  <span className={`text-xs ${alert.status === "open" ? "text-red-400" : "text-gray-600"}`}>
-                    {alert.status}
+                  <span style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: "11px",
+                    color: "var(--text-secondary)",
+                    width: "20px",
+                    textAlign: "right",
+                  }}>
+                    {count}
                   </span>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="text-gray-700 text-sm text-center py-8">No alerts generated yet</div>
           )}
         </div>
+      </div>
+
+      {/* Recent alerts table */}
+      <div style={{
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "10px",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          padding: "16px 16px 14px",
+          borderBottom: "1px solid var(--border-subtle)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}>
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "9px",
+            letterSpacing: "0.14em",
+            color: "var(--text-muted)",
+            textTransform: "uppercase",
+          }}>
+            Recent Alerts
+          </span>
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "10px",
+            color: "var(--text-muted)",
+          }}>
+            {recentAlerts.length} shown
+          </span>
+        </div>
+
+        {/* Table header */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "90px 1fr 80px 90px",
+          gap: "12px",
+          padding: "8px 16px",
+          background: "var(--bg-elevated)",
+          borderBottom: "1px solid var(--border-subtle)",
+        }}>
+          {["Severity", "Type", "Status", "Time"].map(h => (
+            <span key={h} style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "9px",
+              color: "var(--text-muted)",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              textAlign: h === "Status" || h === "Time" ? "right" : "left",
+            }}>
+              {h}
+            </span>
+          ))}
+        </div>
+
+        {recentAlerts.length === 0 ? (
+          <div style={{
+            padding: "32px 16px",
+            textAlign: "center",
+            color: "var(--text-muted)",
+            fontSize: "12px",
+            fontFamily: "'JetBrains Mono', monospace",
+          }}>
+            No alerts detected · System monitoring active
+          </div>
+        ) : (
+          recentAlerts.map(a => <AlertRow key={a.id} alert={a} />)
+        )}
       </div>
     </div>
   );
