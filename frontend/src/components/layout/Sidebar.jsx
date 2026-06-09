@@ -18,8 +18,8 @@ const NAV = [
 ];
 
 const QUICK = [
-  { label: "Inject Test Log", color: "var(--accent-cyan)",   id: "logs" },
-  { label: "Run AI Query",    color: "var(--accent-indigo)", id: "analysis" },
+  { label: "Inject Test Log",     color: "var(--accent-cyan)",   id: "logs" },
+  { label: "Playbook Generator",  color: "var(--accent-indigo)", id: "playbook" },
 ];
 
 export default function Sidebar({ active, onNavigate, mobileOpen, onClose }) {
@@ -57,7 +57,7 @@ export default function Sidebar({ active, onNavigate, mobileOpen, onClose }) {
                 Sentinel<span style={{ color: "var(--accent-indigo)" }}>Ops</span>
               </div>
               <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px", fontFamily: "var(--font-mono)", letterSpacing: "0.06em" }}>
-                SOC · AI · v1.0
+                SOC � AI � v1.0
               </div>
             </div>
           </div>
@@ -143,9 +143,10 @@ export default function Sidebar({ active, onNavigate, mobileOpen, onClose }) {
           <div style={{ height: "3px", borderRadius: "3px", background: "var(--bg-elevated)", overflow: "hidden", marginBottom: "10px" }}>
             <div style={{ height: "100%", width: "100%", borderRadius: "3px", background: "linear-gradient(90deg, var(--accent-indigo), var(--accent-cyan))", animation: "pulsebar 2.5s ease-in-out infinite" }}/>
           </div>
-          <div style={{ fontSize: "11px", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>SentinelOps © 2026</div>
+          <div style={{ fontSize: "11px", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>SentinelOps � 2026</div>
         </div>
       </aside>
     </>
   );
 }
+
