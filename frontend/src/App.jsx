@@ -1,38 +1,27 @@
-import { useState } from "react";
-import Sidebar from "./components/layout/Sidebar";
-import Topbar from "./components/layout/Topbar";
+﻿import { useState } from "react";
+import Layout from "./components/layout/Layout";
 import OverviewView from "./components/overview/OverviewView";
 import AlertsView from "./components/alerts/AlertsView";
 import LogsView from "./components/logs/LogsView";
-import AnalysisView from "./components/analysis/AnalysisView";
+import { QueryPanel, PlaybookPanel } from "./components/analysis/AnalysisView";
 import { SiemProvider } from "./hooks/useSiem";
 
 export default function App() {
   const [view, setView] = useState("overview");
 
   const views = {
-    overview:  <OverviewView />,
-    alerts:    <AlertsView />,
-    logs:      <LogsView />,
-    analysis:  <AnalysisView mode="query" />,
-    playbook:  <AnalysisView mode="playbook" />,
+    overview: <OverviewView />,
+    alerts:   <AlertsView />,
+    logs:     <LogsView />,
+    analysis: <QueryPanel />,
+    playbook: <PlaybookPanel />,
   };
 
   return (
     <SiemProvider>
-      <div style={{
-        display: "flex", height: "100vh",
-        overflow: "hidden", background: "var(--bg-base)",
-      }}>
-        <Sidebar activeView={view} onNavigate={setView} />
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
-          <Topbar activeView={view} />
-          <main style={{ flex: 1, overflowY: "auto", padding: "24px", background: "var(--bg-base)" }}>
-            <div key={view}>{views[view]}</div>
-          </main>
-        </div>
-      </div>
+      <Layout active={view} onNavigate={setView}>
+        <div key={view}>{views[view]}</div>
+      </Layout>
     </SiemProvider>
   );
 }
-

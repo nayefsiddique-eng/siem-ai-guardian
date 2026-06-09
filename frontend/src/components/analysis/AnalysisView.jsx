@@ -31,12 +31,12 @@ const monoLabel = {
   marginBottom: "14px",
 };
 
-function QueryPanel() {
+export function QueryPanel() {
   const { freeformQuery } = useSiem();
-  const [query, setQuery]     = useState("");
-  const [result, setResult]   = useState(null);
+  const [query,   setQuery]   = useState("");
+  const [result,  setResult]  = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState(null);
+  const [error,   setError]   = useState(null);
 
   const submit = async (q) => {
     const text = q || query;
@@ -46,7 +46,7 @@ function QueryPanel() {
     setError(null);
     try {
       const res = await freeformQuery(text);
-      if (!res) throw new Error("No response -- check GEMINI_API_KEY in backend .env");
+      if (!res) throw new Error("No response — check GEMINI_API_KEY in backend .env");
       setResult(res);
     } catch (e) {
       setError(e.message);
@@ -61,13 +61,13 @@ function QueryPanel() {
         <div style={monoLabel}>AI Threat Intelligence Query</div>
         <div style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "14px", lineHeight: 1.6 }}>
           Describe any security incident in plain English. The AI will analyze it, identify the
-          attack type, map to MITRE ATT&CK, and recommend actions.
+          attack type, map to MITRE ATT&amp;CK, and recommend actions.
         </div>
 
         <textarea
           value={query}
           onChange={e => setQuery(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }}}
+          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
           placeholder="e.g. 15 failed logins from same IP followed by successful login at 3am..."
           rows={4}
           style={{
@@ -78,21 +78,25 @@ function QueryPanel() {
             resize: "none", outline: "none", lineHeight: 1.6,
           }}
           onFocus={e => e.target.style.borderColor = "rgba(99,102,241,0.5)"}
-          onBlur={e => e.target.style.borderColor = "var(--border-default)"}
+          onBlur={e  => e.target.style.borderColor = "var(--border-default)"}
         />
 
         <div style={{ display: "flex", flexDirection: "column", gap: "5px", margin: "10px 0" }}>
           {SUGGESTIONS.map(s => (
-            <button key={s} onClick={() => submit(s)} style={{
-              textAlign: "left", padding: "6px 10px", borderRadius: "6px",
-              border: "1px solid var(--border-subtle)", background: "transparent",
-              color: "var(--text-muted)", fontSize: "11px", cursor: "pointer",
-              fontFamily: "inherit", lineHeight: 1.4,
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.borderColor = "var(--border-default)"; }}
-            onMouseLeave={e => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "var(--border-subtle)"; }}
+            <button
+              key={s}
+              onClick={() => submit(s)}
+              style={{
+                textAlign: "left", padding: "6px 10px", borderRadius: "6px",
+                border: "1px solid var(--border-subtle)", background: "transparent",
+                color: "var(--text-muted)", fontSize: "11px", cursor: "pointer",
+                fontFamily: "inherit", lineHeight: 1.4,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.borderColor = "var(--border-default)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "var(--text-muted)";     e.currentTarget.style.borderColor = "var(--border-subtle)"; }}
             >
-              {">"} {s}
+              <span style={{ color: "var(--accent-cyan)", marginRight: "6px", fontFamily: "var(--font-mono)" }}>&rsaquo;</span>
+              {s}
             </button>
           ))}
         </div>
@@ -125,6 +129,7 @@ function QueryPanel() {
           <div style={monoLabel}>AI Analysis Result</div>
           {typeof result === "object" ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+
               {result.risk_level && (
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>Risk Level</span>
@@ -134,18 +139,24 @@ function QueryPanel() {
                     color: RISK_COLOR[result.risk_level] || "var(--text-secondary)",
                     padding: "2px 8px", borderRadius: "4px",
                     background: `${RISK_COLOR[result.risk_level] || "#fff"}15`,
-                  }}>{result.risk_level}</span>
+                  }}>
+                    {result.risk_level}
+                  </span>
                 </div>
               )}
+
               {result.threat_summary && (
                 <div>
                   <div style={{ ...monoLabel, marginBottom: "6px" }}>Threat Summary</div>
-                  <p style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.7 }}>{result.threat_summary}</p>
+                  <p style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.7 }}>
+                    {result.threat_summary}
+                  </p>
                 </div>
               )}
+
               {result.mitre_techniques?.length > 0 && (
                 <div>
-                  <div style={{ ...monoLabel, marginBottom: "8px" }}>MITRE ATT&CK</div>
+                  <div style={{ ...monoLabel, marginBottom: "8px" }}>MITRE ATT&amp;CK</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                     {result.mitre_techniques.map((t, i) => (
                       <span key={i} style={{
@@ -158,18 +169,20 @@ function QueryPanel() {
                   </div>
                 </div>
               )}
+
               {result.recommendations?.length > 0 && (
                 <div>
                   <div style={{ ...monoLabel, marginBottom: "8px" }}>Recommendations</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
                     {result.recommendations.map((r, i) => (
                       <div key={i} style={{ display: "flex", gap: "8px", fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                        <span style={{ color: "var(--accent-cyan)", flexShrink: 0 }}>{"→"}</span>{r}
+                        <span style={{ color: "var(--accent-cyan)", flexShrink: 0 }}>&rarr;</span>{r}
                       </div>
                     ))}
                   </div>
                 </div>
               )}
+
               {result.investigation_steps?.length > 0 && (
                 <div>
                   <div style={{ ...monoLabel, marginBottom: "8px" }}>Investigation Steps</div>
@@ -182,9 +195,12 @@ function QueryPanel() {
                   </div>
                 </div>
               )}
+
             </div>
           ) : (
-            <p style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{String(result)}</p>
+            <p style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+              {String(result)}
+            </p>
           )}
         </div>
       )}
@@ -192,13 +208,13 @@ function QueryPanel() {
   );
 }
 
-function PlaybookPanel() {
+export function PlaybookPanel() {
   const { alerts } = useSiem();
   const [selectedAlert, setSelectedAlert] = useState("");
-  const [playbook, setPlaybook]   = useState(null);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState(null);
-  const [status, setStatus]       = useState(null);
+  const [playbook, setPlaybook] = useState(null);
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState(null);
+  const [status,   setStatus]   = useState(null);
 
   const openAlerts = alerts.filter(a => a.status === "open");
 
@@ -214,7 +230,7 @@ function PlaybookPanel() {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status} -- make sure you are logged in`);
+      if (!res.ok) throw new Error(`HTTP ${res.status} — make sure you are logged in`);
       const data = await res.json();
       setPlaybook(data);
       setStatus(data.status);
@@ -233,8 +249,9 @@ function PlaybookPanel() {
       body: action === "reject" ? JSON.stringify({ reason: "Rejected by analyst" }) : undefined,
     });
     if (res.ok) {
-      setStatus(action === "approve" ? "approved" : "rejected");
-      setPlaybook(p => ({ ...p, status: action === "approve" ? "approved" : "rejected" }));
+      const newStatus = action === "approve" ? "approved" : "rejected";
+      setStatus(newStatus);
+      setPlaybook(p => ({ ...p, status: newStatus }));
     }
   };
 
@@ -253,7 +270,7 @@ function PlaybookPanel() {
             border: "1px solid var(--border-subtle)", textAlign: "center",
             fontSize: "12px", color: "var(--text-muted)", marginBottom: "12px",
           }}>
-            No open alerts -- ingest logs first to generate alerts
+            No open alerts — ingest logs first to generate alerts
           </div>
         ) : (
           <select
@@ -267,7 +284,7 @@ function PlaybookPanel() {
               outline: "none", marginBottom: "12px", cursor: "pointer",
             }}
           >
-            <option value="">-- Select an open alert --</option>
+            <option value="">— Select an open alert —</option>
             {openAlerts.map(a => (
               <option key={a.id} value={a.id}>
                 [{(a.severity || "").toUpperCase()}] {(a.title || "").slice(0, 55)}
@@ -385,7 +402,7 @@ function PlaybookPanel() {
           {status === "approved" && (
             <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.2)", textAlign: "center" }}>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--severity-low)", letterSpacing: "0.1em" }}>
-                PLAYBOOK APPROVED -- ACTIONS AUTHORIZED
+                PLAYBOOK APPROVED — ACTIONS AUTHORIZED
               </span>
             </div>
           )}
