@@ -9,6 +9,7 @@ from app.core.database import get_db
 from app.models.log_entry import LogEntry
 from app.services.detection_engine import detection_engine
 from app.services.gemini_service import gemini_service
+from app.services.tiering_engine import assign_tier, write_to_cold_storage, read_cold_storage, get_cold_storage_stats
 
 router = APIRouter()
 
@@ -126,3 +127,18 @@ async def get_log(log_id: int, db: AsyncSession = Depends(get_db)):
     if not log:
         raise HTTPException(status_code=404, detail="Log not found.")
     return log.to_dict()
+
+
+
+@router.get("/cold", summary="Query cold storage logs by date")
+async def get_cold_logs(date: str = Query(default=None, example="2026-06-09")):
+    from datetime import datetime, timezone
+    if not date:
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    logs = read_cold_storage(date)
+    return {"date": date, "logs": logs, "count": len(logs)}
+
+
+@router.get("/cold/stats", summary="Cold storage statistics")
+async def cold_storage_stats():
+    return get_cold_storage_stats()
