@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.api import logs, alerts, analysis, dashboard, auth
+from app.api import logs, alerts, analysis, dashboard, auth, playbooks
 from app.core.database import init_db
 from app.core.config import settings
 import logging
@@ -37,6 +37,7 @@ app.include_router(logs.router, prefix="/api/logs", tags=["Logs"])
 app.include_router(alerts.router, prefix="/api/alerts", tags=["Alerts"])
 app.include_router(analysis.router, prefix="/api/analysis", tags=["AI Analysis"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
+app.include_router(playbooks.router, prefix="/api/playbooks", tags=["Playbooks"])
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 
 
