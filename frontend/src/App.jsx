@@ -4,6 +4,7 @@ import OverviewView from "./components/overview/OverviewView";
 import AlertsView from "./components/alerts/AlertsView";
 import LogsView from "./components/logs/LogsView";
 import { QueryPanel, PlaybookPanel } from "./components/analysis/AnalysisView";
+import ReportsView from "./components/reports/ReportsView";
 import { SiemProvider } from "./hooks/useSiem";
 
 export default function App() {
@@ -11,16 +12,19 @@ export default function App() {
 
   const views = {
     overview: <OverviewView />,
-    alerts:   <AlertsView />,
-    logs:     <LogsView />,
+    alerts: <AlertsView />,
+    logs: <LogsView />,
     analysis: <QueryPanel />,
     playbook: <PlaybookPanel />,
+    reports: <ReportsView />,
   };
 
   return (
     <SiemProvider>
       <Layout active={view} onNavigate={setView}>
-        <div key={view}>{views[view]}</div>
+        <div key={view}>
+          {views[view]}
+        </div>
       </Layout>
     </SiemProvider>
   );
