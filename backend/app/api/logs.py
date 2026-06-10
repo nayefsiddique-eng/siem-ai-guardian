@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+﻿from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from pydantic import BaseModel, Field
@@ -9,6 +9,8 @@ from app.core.database import get_db
 from app.models.log_entry import LogEntry
 from app.services.detection_engine import detection_engine
 from app.services.gemini_service import gemini_service
+from app.services.mitre_service import enrich_alert
+from app.services.correlation_engine import correlate
 from app.services.tiering_engine import assign_tier, write_to_cold_storage, read_cold_storage, get_cold_storage_stats
 
 router = APIRouter()
@@ -43,6 +45,7 @@ async def ingest_log(payload: LogIngestRequest, db: AsyncSession = Depends(get_d
     await db.flush()  # get the ID before detection
 
     alert = await detection_engine.analyze_log(log, db)
+    await correlate(log, db)
 
     # If alert triggered, run AI analysis asynchronously (don't block response)
     if alert:
