@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+﻿from pydantic_settings import BaseSettings
 from typing import List
 
 
@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     PORT_SCAN_WINDOW_SECONDS: int = 30
 
     # Threat Intel
+    ABUSEIPDB_API_KEY: str = ""
     THREAT_INTEL_FEEDS: List[str] = []
 
     class Config:
@@ -32,3 +33,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+

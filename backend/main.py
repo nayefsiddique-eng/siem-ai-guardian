@@ -2,6 +2,7 @@
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.api import logs, alerts, analysis, dashboard, auth, playbooks, compliance, reports
+from app.api import threat_intel
 from app.core.database import init_db
 from app.core.config import settings
 import logging
@@ -39,6 +40,7 @@ app.include_router(analysis.router, prefix="/api/analysis", tags=["AI Analysis"]
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
 app.include_router(playbooks.router, prefix="/api/playbooks", tags=["Playbooks"])
 app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
+app.include_router(threat_intel.router)
 app.include_router(compliance.router, prefix="/api/compliance", tags=["Compliance"])
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 
@@ -46,3 +48,5 @@ app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "AI-Powered SIEM"}
+
+

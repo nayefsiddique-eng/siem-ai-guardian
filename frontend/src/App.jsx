@@ -3,8 +3,10 @@ import Layout from "./components/layout/Layout";
 import OverviewView from "./components/overview/OverviewView";
 import AlertsView from "./components/alerts/AlertsView";
 import LogsView from "./components/logs/LogsView";
-import { QueryPanel, PlaybookPanel } from "./components/analysis/AnalysisView";
+import AnalysisView from "./components/analysis/AnalysisView";
+import ComplianceView from "./components/compliance/ComplianceView";
 import ReportsView from "./components/reports/ReportsView";
+import PlaybookView from "./components/playbook/PlaybookView";
 import { SiemProvider } from "./hooks/useSiem";
 
 export default function App() {
@@ -12,11 +14,12 @@ export default function App() {
 
   const views = {
     overview: <OverviewView />,
-    alerts: <AlertsView />,
-    logs: <LogsView />,
-    analysis: <QueryPanel />,
-    playbook: <PlaybookPanel />,
-    reports: <ReportsView />,
+    alerts:   <AlertsView />,
+    logs:     <LogsView />,
+    analysis: <AnalysisView />,
+    playbook: <PlaybookView />,
+    reports:  <ReportsView />
+    compliance: <ComplianceView />,,
   };
 
   return (
@@ -29,3 +32,5 @@ export default function App() {
     </SiemProvider>
   );
 }
+
+
