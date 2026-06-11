@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 const NAV = [
   {
@@ -25,6 +25,21 @@ const NAV = [
         id: "analysis", label: "AI Analysis", sub: "Query & correlate",
         icon: <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.6"/><path d="M7 11c0-1.7 1.3-3 3-3s3 1.3 3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="10" cy="13.5" r="1" fill="currentColor"/></svg>,
       },
+{
+  id: "sentinalai",
+  label: "Sentinal AI",
+  sub: "AI SOC assistant",
+  icon: (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+      <path
+        d="M10 2L16 5V9C16 13 13.5 16.2 10 18C6.5 16.2 4 13 4 9V5L10 2Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <circle cx="10" cy="10" r="1.5" fill="currentColor" />
+    </svg>
+  ),
+},
       {
         id: "playbook", label: "Playbooks", sub: "Response automation",
         icon: <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 3h10a1 1 0 011 1v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4a1 1 0 011-1Z" stroke="currentColor" strokeWidth="1.6"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
@@ -86,7 +101,7 @@ export default function Sidebar({ active, onNavigate, mobileOpen, onClose }) {
         }}
       >
 
-        {/* ── Logo ── */}
+        {/* -- Logo -- */}
         <div style={{
           padding: "20px 16px 16px",
           borderBottom: "1px solid rgba(255,255,255,0.07)",
@@ -117,7 +132,7 @@ export default function Sidebar({ active, onNavigate, mobileOpen, onClose }) {
                 fontSize: "10px", color: "#5a6480", marginTop: "2px",
                 fontFamily: "var(--font-mono)", letterSpacing: "0.08em",
               }}>
-                SOC · AI · v1.0
+                SOC � AI � v1.0
               </div>
             </div>
           </div>
@@ -152,7 +167,7 @@ export default function Sidebar({ active, onNavigate, mobileOpen, onClose }) {
           </div>
         </div>
 
-        {/* ── Nav ── */}
+        {/* -- Nav -- */}
         <nav style={{
           flex: 1, padding: "16px 10px",
           display: "flex", flexDirection: "column", gap: "24px",
@@ -241,7 +256,7 @@ export default function Sidebar({ active, onNavigate, mobileOpen, onClose }) {
           ))}
         </nav>
 
-        {/* ── Footer ── */}
+        {/* -- Footer -- */}
         <div style={{
           padding: "14px 16px",
           borderTop: "1px solid rgba(255,255,255,0.07)",
@@ -279,12 +294,19 @@ export default function Sidebar({ active, onNavigate, mobileOpen, onClose }) {
             fontSize: "11px", color: "#3d4660",
             fontFamily: "var(--font-mono)",
           }}>
-            SentinelAI · 2026
+            SentinelAI � 2026
           </div>
         </div>
       </aside>
     </>
   );
 }
+
+
+
+
+
+
+
 
 

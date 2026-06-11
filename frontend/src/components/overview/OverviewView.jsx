@@ -1,4 +1,4 @@
-ï»¿import { useEffect } from "react";
+import { useEffect } from "react";
 import { useSiem } from "../../hooks/useSiem";
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
@@ -25,7 +25,7 @@ function StatCard({ label, value, sub, accent }) {
       flex: 1, minWidth: 0, borderTop: "2px solid " + accent,
     }}>
       <div style={{ fontSize: "10px", fontFamily: "var(--font-mono)", letterSpacing: "0.14em", color: "#5a6480", marginBottom: "10px" }}>{label}</div>
-      <div style={{ fontSize: "32px", fontWeight: 700, color: "#f0f2f7", lineHeight: 1, fontFamily: "var(--font-mono)" }}>{value ?? "â€”"}</div>
+      <div style={{ fontSize: "32px", fontWeight: 700, color: "#f0f2f7", lineHeight: 1, fontFamily: "var(--font-mono)" }}>{value ?? "—"}</div>
       <div style={{ fontSize: "11px", color: "#5a6480", marginTop: "6px" }}>{sub}</div>
     </div>
   );
@@ -128,7 +128,7 @@ function AlertTrendChart({ alerts }) {
     <div style={{ background: "#111318", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.07)", padding: "20px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
         <div style={{ fontSize: "10px", fontFamily: "var(--font-mono)", letterSpacing: "0.14em", color: "#5a6480" }}>
-          ALERT TREND Â· LAST 24 HOURS
+          ALERT TREND · LAST 24 HOURS
         </div>
         <div style={{ display: "flex", gap: "12px" }}>
           {SEV.map(s => (
@@ -316,7 +316,7 @@ export default function OverviewView() {
         </div>
         {recentAlerts.length === 0 ? (
           <div style={{ padding: "48px 20px", textAlign: "center" }}>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "#3d4660" }}>No alerts detected Â· System monitoring active</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "#3d4660" }}>No alerts detected · System monitoring active</div>
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -335,11 +335,11 @@ export default function OverviewView() {
                 >
                   <td style={{ padding: "11px 20px" }}>
                     <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.1em", color: SEV_COLOR[a.severity] || "#5a6480", fontWeight: 600 }}>
-                      {(a.severity||"â€”").toUpperCase()}
+                      {(a.severity||"—").toUpperCase()}
                     </span>
                   </td>
                   <td style={{ padding: "11px 20px", fontSize: "12px", color: "#a8b3cc" }}>
-                    {(a.alert_type||a.title||"â€”").replace(/_/g," ")}
+                    {(a.alert_type||a.title||"—").replace(/_/g," ")}
                   </td>
                   <td style={{ padding: "11px 20px" }}>
                     <span style={{
@@ -353,7 +353,7 @@ export default function OverviewView() {
                     </span>
                   </td>
                   <td style={{ padding: "11px 20px", fontFamily: "var(--font-mono)", fontSize: "11px", color: "#5a6480" }}>
-                    {a.created_at ? new Date(a.created_at).toLocaleTimeString() : "â€”"}
+                    {a.created_at ? new Date(a.created_at).toLocaleTimeString() : "—"}
                   </td>
                 </tr>
               ))}
@@ -365,3 +365,7 @@ export default function OverviewView() {
     </div>
   );
 }
+
+
+
+

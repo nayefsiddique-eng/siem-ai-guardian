@@ -1,4 +1,4 @@
-ï»¿import { useState } from "react";
+import { useState } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
 const SUGGESTIONS = [
@@ -46,7 +46,7 @@ export function QueryPanel() {
     setError(null);
     try {
       const res = await freeformQuery(text);
-      if (!res) throw new Error("No response â€” check GEMINI_API_KEY in backend .env");
+      if (!res) throw new Error("No response — check GEMINI_API_KEY in backend .env");
       setResult(res);
     } catch (e) {
       setError(e.message);
@@ -230,7 +230,7 @@ export function PlaybookPanel() {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status} â€” make sure you are logged in`);
+      if (!res.ok) throw new Error(`HTTP ${res.status} — make sure you are logged in`);
       const data = await res.json();
       setPlaybook(data);
       setStatus(data.status);
@@ -270,7 +270,7 @@ export function PlaybookPanel() {
             border: "1px solid var(--border-subtle)", textAlign: "center",
             fontSize: "12px", color: "var(--text-muted)", marginBottom: "12px",
           }}>
-            No open alerts â€” ingest logs first to generate alerts
+            No open alerts — ingest logs first to generate alerts
           </div>
         ) : (
           <select
@@ -284,7 +284,7 @@ export function PlaybookPanel() {
               outline: "none", marginBottom: "12px", cursor: "pointer",
             }}
           >
-            <option value="">â€” Select an open alert â€”</option>
+            <option value="">— Select an open alert —</option>
             {openAlerts.map(a => (
               <option key={a.id} value={a.id}>
                 [{(a.severity || "").toUpperCase()}] {(a.title || "").slice(0, 55)}
@@ -402,7 +402,7 @@ export function PlaybookPanel() {
           {status === "approved" && (
             <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.2)", textAlign: "center" }}>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--severity-low)", letterSpacing: "0.1em" }}>
-                PLAYBOOK APPROVED â€” ACTIONS AUTHORIZED
+                PLAYBOOK APPROVED — ACTIONS AUTHORIZED
               </span>
             </div>
           )}
@@ -423,3 +423,7 @@ export function PlaybookPanel() {
 export default function AnalysisView({ mode = "query" }) {
   return mode === "playbook" ? <PlaybookPanel /> : <QueryPanel />;
 }
+
+
+
+

@@ -1,4 +1,4 @@
-ï»¿import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
 function StatCard({ label, value, sub, accent, glow }) {
@@ -38,7 +38,7 @@ function StatCard({ label, value, sub, accent, glow }) {
         color: "var(--text-primary)",
         lineHeight: 1,
       }}>
-        {value ?? "â€”"}
+        {value ?? "—"}
       </span>
       {sub && (
         <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
@@ -151,7 +151,7 @@ function AlertRow({ alert }) {
         color: "var(--text-muted)",
         textAlign: "right",
       }}>
-        {alert.created_at ? new Date(alert.created_at).toLocaleTimeString() : "â€”"}
+        {alert.created_at ? new Date(alert.created_at).toLocaleTimeString() : "—"}
       </span>
     </div>
   );
@@ -383,7 +383,7 @@ export default function DashboardHome() {
             fontSize: "12px",
             fontFamily: "'JetBrains Mono', monospace",
           }}>
-            No alerts detected Â· System monitoring active
+            No alerts detected · System monitoring active
           </div>
         ) : (
           recentAlerts.map(a => <AlertRow key={a.id} alert={a} />)
@@ -392,3 +392,7 @@ export default function DashboardHome() {
     </div>
   );
 }
+
+
+
+

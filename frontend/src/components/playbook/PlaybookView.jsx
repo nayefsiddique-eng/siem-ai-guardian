@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
 export default function PlaybookView() {
@@ -71,11 +71,11 @@ export default function PlaybookView() {
         {/* Alert selector */}
         <div style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "12px", overflow: "hidden" }}>
           <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)", fontSize: "11px", fontWeight: 600, color: "#5a6480", letterSpacing: "0.12em", textTransform: "uppercase" }}>
-            Active Alerts — {openAlerts.length} available
+            Active Alerts � {openAlerts.length} available
           </div>
           <div style={{ maxHeight: "400px", overflowY: "auto" }}>
             {openAlerts.length === 0
-              ? <div style={{ padding: "32px", textAlign: "center", fontSize: "13px", color: "#3d4660" }}>No open alerts — inject test events first</div>
+              ? <div style={{ padding: "32px", textAlign: "center", fontSize: "13px", color: "#3d4660" }}>No open alerts � inject test events first</div>
               : openAlerts.map(a => {
                   const SEV_COLOR = { critical: "#f87171", high: "#fb923c", medium: "#fbbf24", low: "#34d399" };
                   const color = SEV_COLOR[a.severity] || "#5a6480";
@@ -98,7 +98,7 @@ export default function PlaybookView() {
                         </span>
                       </div>
                       <div style={{ fontSize: "11px", color: "#5a6480", fontFamily: "var(--font-mono)" }}>
-                        {a.source_ip || "-"} → {a.dest_ip || "-"}
+                        {a.source_ip || "-"} ? {a.dest_ip || "-"}
                       </div>
                     </div>
                   );
@@ -120,7 +120,7 @@ export default function PlaybookView() {
               color: !selected || loading ? "#3d4660" : "#818cf8",
               fontSize: "11px", fontWeight: 600, fontFamily: "var(--font-mono)", letterSpacing: "0.06em",
             }}>
-              {loading ? "GENERATING..." : "✦ GENERATE"}
+              {loading ? "GENERATING..." : "? GENERATE"}
             </button>
           </div>
 
@@ -137,7 +137,7 @@ export default function PlaybookView() {
 
             {!loading && !playbook && !selected && (
               <div style={{ textAlign: "center", padding: "40px 0", color: "#3d4660", fontSize: "13px" }}>
-                ← Select an alert to begin
+                ? Select an alert to begin
               </div>
             )}
 
@@ -164,12 +164,12 @@ export default function PlaybookView() {
                 flex: 1, padding: "10px", borderRadius: "8px", cursor: "pointer",
                 background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.3)",
                 color: "#34d399", fontSize: "12px", fontWeight: 600, fontFamily: "var(--font-mono)",
-              }}>✓ APPROVE</button>
+              }}>? APPROVE</button>
               <button onClick={reject} style={{
                 flex: 1, padding: "10px", borderRadius: "8px", cursor: "pointer",
                 background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)",
                 color: "#f87171", fontSize: "12px", fontWeight: 600, fontFamily: "var(--font-mono)",
-              }}>✕ REJECT</button>
+              }}>? REJECT</button>
             </div>
           )}
         </div>
@@ -177,3 +177,7 @@ export default function PlaybookView() {
     </div>
   );
 }
+
+
+
+

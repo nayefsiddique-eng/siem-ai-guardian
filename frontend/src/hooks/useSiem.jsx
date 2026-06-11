@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const SiemContext = createContext(null);
@@ -21,7 +21,10 @@ export function SiemProvider({ children }) {
   const fetchStats = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE}/api/dashboard/stats`, { headers: authHeaders() });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || JSON.stringify(err));
+        }
       setStats(await res.json());
       setError(null);
     } catch (e) { setError(e.message); }
@@ -31,7 +34,10 @@ export function SiemProvider({ children }) {
     try {
       const params = new URLSearchParams({ limit: 50, ...filters });
       const res = await fetch(`${API_BASE}/api/alerts?${params}`, { headers: authHeaders() });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || JSON.stringify(err));
+        }
       const data = await res.json();
       setAlerts(data.alerts || data || []);
     } catch (e) { setError(e.message); }
@@ -40,7 +46,10 @@ export function SiemProvider({ children }) {
   const fetchLogs = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE}/api/logs`, { headers: authHeaders() });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || JSON.stringify(err));
+        }
       const data = await res.json();
       setLogs(Array.isArray(data) ? data : data.logs || []);
     } catch (e) { setError(e.message); }
@@ -51,7 +60,10 @@ export function SiemProvider({ children }) {
       method: "POST", headers: authHeaders(),
       body: JSON.stringify(logData),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || JSON.stringify(err));
+        }
     return res.json();
   }, [authHeaders]);
 
@@ -59,7 +71,10 @@ export function SiemProvider({ children }) {
     const res = await fetch(`${API_BASE}/api/alerts/${alertId}/analyze`, {
       method: "POST", headers: authHeaders(),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || JSON.stringify(err));
+        }
     const data = await res.json();
     setAlerts(prev => prev.map(a => a.id === alertId ? { ...a, ...data } : a));
     return data;
@@ -79,9 +94,12 @@ export function SiemProvider({ children }) {
     try {
       const res = await fetch(`${API_BASE}/api/analysis/freeform`, {
         method: "POST", headers: authHeaders(),
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ context: query }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || JSON.stringify(err));
+        }
       const data = await res.json();
       return data.response || data.result || data;
     } catch (e) {
@@ -93,7 +111,10 @@ export function SiemProvider({ children }) {
     const res = await fetch(`${API_BASE}/api/playbooks/${alertId}/generate`, {
       method: "POST", headers: authHeaders(),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || JSON.stringify(err));
+        }
     return res.json();
   }, [authHeaders]);
 
@@ -101,7 +122,10 @@ export function SiemProvider({ children }) {
     const res = await fetch(`${API_BASE}/api/playbooks/${alertId}/approve`, {
       method: "POST", headers: authHeaders(),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || JSON.stringify(err));
+        }
     return res.json();
   }, [authHeaders]);
 
@@ -134,8 +158,8 @@ export function SiemProvider({ children }) {
 
   useEffect(() => {
     refresh();
-    const interval = setInterval(refresh, 30000);
-    return () => clearInterval(interval);
+    // // const interval = setInterval(refresh, 30000);
+    // // return () => clearInterval(interval);
   }, [refresh]);
 
   return (
@@ -157,3 +181,9 @@ export function useSiem() {
   if (!ctx) throw new Error("useSiem must be inside SiemProvider");
   return ctx;
 }
+
+
+
+
+
+

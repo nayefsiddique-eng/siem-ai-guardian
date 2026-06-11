@@ -1,4 +1,4 @@
-ï»¿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
 const SEV_COLOR = {
@@ -34,7 +34,7 @@ const TEST_EVENTS = [
       source_ip: "192.168.1.55", dest_ip: "192.168.1.1",
       event_type: "privilege_escalation", severity: "critical",
       hostname: "workstation-07", username: "jdoe",
-      raw_message: "sudo su root executed by jdoe â€” UAC bypass attempted",
+      raw_message: "sudo su root executed by jdoe — UAC bypass attempted",
     },
   },
   {
@@ -70,13 +70,13 @@ function LogRow({ log }) {
         {sev}
       </span>
       <span style={{ color: "var(--text-muted)" }}>
-        {log.source_ip || "â€”"}
+        {log.source_ip || "—"}
       </span>
       <span style={{ color: "var(--text-muted)" }}>
-        {log.dest_ip || "â€”"}
+        {log.dest_ip || "—"}
       </span>
       <span style={{ color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {log.event_type || "â€”"}
+        {log.event_type || "—"}
       </span>
       <span style={{
         color: "var(--text-secondary)",
@@ -85,7 +85,7 @@ function LogRow({ log }) {
         whiteSpace: "nowrap",
         fontSize: "10px",
       }}>
-        {log.raw_message || "â€”"}
+        {log.raw_message || "—"}
       </span>
     </div>
   );
@@ -163,7 +163,7 @@ export default function LogsView() {
               }
             }}
           >
-            {injecting === evt.label ? "Injectingâ€¦" : `+ ${evt.label}`}
+            {injecting === evt.label ? "Injecting…" : `+ ${evt.label}`}
           </button>
         ))}
         <button
@@ -181,7 +181,7 @@ export default function LogsView() {
             cursor: "pointer",
           }}
         >
-          â†» Refresh
+          ? Refresh
         </button>
       </div>
 
@@ -223,7 +223,7 @@ export default function LogsView() {
               fontSize: "11px",
               color: "var(--text-muted)",
             }}>
-              No logs yet Â· inject a test event to begin
+              No logs yet · inject a test event to begin
             </div>
           ) : (
             [...logs].reverse().map((log, i) => (
@@ -267,4 +267,8 @@ export default function LogsView() {
     </div>
   );
 }
+
+
+
+
 

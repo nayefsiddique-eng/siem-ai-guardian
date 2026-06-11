@@ -1,6 +1,5 @@
 import json
 import logging
-
 import httpx
 
 from app.core.config import settings
@@ -24,37 +23,11 @@ class GeminiAnalysisService:
     async def analyze_freeform(self, context: str) -> dict:
 
         prompt = f"""
-You are a senior SOC analyst.
+You are Sentinal AI, a Tier-3 SOC analyst.
 
-Analyze this security event:
+Analyze:
 
 {context}
-
-RULES:
-
-1. threat_summary must be 2-3 sentences maximum.
-2. recommendations must contain at most 5 items.
-3. risk_level must be ONLY:
-   low, medium, high, critical
-4. confidence must be ONLY:
-   low, medium, high
-5. false_positive_likelihood must be ONLY:
-   low, medium, high
-6. attack_stage must be ONLY one of:
-
-reconnaissance
-initial_access
-execution
-persistence
-privilege_escalation
-defense_evasion
-credential_access
-discovery
-lateral_movement
-collection
-exfiltration
-command_and_control
-impact
 
 Return ONLY valid JSON:
 
@@ -82,27 +55,60 @@ Return ONLY valid JSON:
             ]
         }
 
-        async with httpx.AsyncClient(timeout=30) as client:
+        try:
 
-            response = await client.post(
-                self.url,
-                params={"key": self.api_key},
-                json=payload
-            )
+            async with httpx.AsyncClient(timeout=30) as client:
 
-            response.raise_for_status()
+                response = await client.post(
+                    self.url,
+                    params={"key": self.api_key},
+                    json=payload
+                )
 
-            data = response.json()
+                response.raise_for_status()
 
-            text = data["candidates"][0]["content"]["parts"][0]["text"]
+                data = response.json()
 
-            text = (
-                text.replace("```json", "")
-                .replace("```", "")
-                .strip()
-            )
+                text = data["candidates"][0]["content"]["parts"][0]["text"]
 
-            return json.loads(text)
+                text = (
+                    text.replace("```json", "")
+                    .replace("```", "")
+                    .strip()
+                )
+
+                try:
+                    return json.loads(text)
+
+                except Exception:
+
+                    return {
+                        "threat_summary": text,
+                        "risk_level": "medium",
+                        "confidence": "medium",
+                        "attack_stage": "discovery",
+                        "indicators_of_compromise": [],
+                        "recommendations": [],
+                        "false_positive_likelihood": "low",
+                        "false_positive_reason": ""
+                    }
+
+        except Exception as e:
+
+            return {
+                "threat_summary": f"AI provider unavailable: {str(e)}",
+                "risk_level": "medium",
+                "confidence": "low",
+                "attack_stage": "discovery",
+                "indicators_of_compromise": [],
+                "recommendations": [
+                    "Retry later",
+                    "Check Gemini API quota",
+                    "Use another Gemini API key"
+                ],
+                "false_positive_likelihood": "low",
+                "false_positive_reason": ""
+            }
 
     async def analyze_alert(
         self,

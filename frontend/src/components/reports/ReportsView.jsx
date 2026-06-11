@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
 const StatCard = ({ label, value, sub, color, icon }) => (
@@ -75,7 +75,7 @@ export default function ReportsView() {
           background: "linear-gradient(135deg,rgba(129,140,248,0.2),rgba(34,211,238,0.1))",
           border: "1px solid rgba(129,140,248,0.3)",
           display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px",
-        }}>📋</div>
+        }}>??</div>
         <div style={{ fontSize: "16px", fontWeight: 600, color: "#f0f2f7" }}>Reports & Intelligence</div>
         <div style={{ fontSize: "13px", color: "#5a6480", textAlign: "center", maxWidth: "320px", lineHeight: 1.6 }}>
           Load your current alert data to generate threat summaries, export reports, and run AI analysis.
@@ -131,7 +131,7 @@ export default function ReportsView() {
         <div>
           <div style={{ fontSize: "15px", fontWeight: 700, color: "#f0f2f7" }}>Threat Intelligence Report</div>
           <div style={{ fontSize: "12px", color: "#5a6480", marginTop: "3px" }}>
-            Generated · {new Date().toUTCString()}
+            Generated � {new Date().toUTCString()}
           </div>
         </div>
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -155,11 +155,11 @@ export default function ReportsView() {
 
       {/* Stat cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "12px" }}>
-        <StatCard label="Total Alerts"  value={total}    sub="all time"          color="#818cf8" icon="🔔" />
-        <StatCard label="Open"          value={open}     sub="pending triage"    color="#fbbf24" icon="⚠️" />
-        <StatCard label="Critical"      value={critical} sub="immediate action"  color="#f87171" icon="🔴" />
-        <StatCard label="Resolved"      value={resolved} sub="closed incidents"  color="#34d399" icon="✅" />
-        <StatCard label="False Pos."    value={fp}       sub="noise filtered"    color="#a78bfa" icon="🚫" />
+        <StatCard label="Total Alerts"  value={total}    sub="all time"          color="#818cf8" icon="??" />
+        <StatCard label="Open"          value={open}     sub="pending triage"    color="#fbbf24" icon="??" />
+        <StatCard label="Critical"      value={critical} sub="immediate action"  color="#f87171" icon="??" />
+        <StatCard label="Resolved"      value={resolved} sub="closed incidents"  color="#34d399" icon="?" />
+        <StatCard label="False Pos."    value={fp}       sub="noise filtered"    color="#a78bfa" icon="??" />
       </div>
 
       {/* Tab bar */}
@@ -183,7 +183,7 @@ export default function ReportsView() {
         ))}
       </div>
 
-      {/* ── TAB: SUMMARY ── */}
+      {/* -- TAB: SUMMARY -- */}
       {activeTab === "summary" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
 
@@ -234,7 +234,7 @@ export default function ReportsView() {
               const counts  = tactics.reduce((acc, t) => { acc[t] = (acc[t] || 0) + 1; return acc; }, {});
               const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]);
               return entries.length === 0
-                ? <div style={{ fontSize: "13px", color: "#3d4660", fontStyle: "italic" }}>No tactic data yet — inject logs to populate.</div>
+                ? <div style={{ fontSize: "13px", color: "#3d4660", fontStyle: "italic" }}>No tactic data yet � inject logs to populate.</div>
                 : (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                     {entries.map(([t, n]) => (
@@ -280,7 +280,7 @@ export default function ReportsView() {
         </div>
       )}
 
-      {/* ── TAB: ALERTS TABLE ── */}
+      {/* -- TAB: ALERTS TABLE -- */}
       {activeTab === "alerts" && (
         <div style={{
           background: "#111318", border: "1px solid rgba(255,255,255,0.07)",
@@ -315,7 +315,7 @@ export default function ReportsView() {
                       <span style={{ fontSize: "11px", color: "#a8b3cc", fontFamily: "var(--font-mono)" }}>{a.source_ip || "-"}</span>
                       <span style={{ fontSize: "11px", color: "#a8b3cc", fontFamily: "var(--font-mono)" }}>{a.dest_ip || "-"}</span>
                       <span style={{ fontSize: "11px", color: "#a8b3cc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {[a.event_type, a.mitre_tactic].filter(Boolean).join(" · ") || "-"}
+                        {[a.event_type, a.mitre_tactic].filter(Boolean).join(" � ") || "-"}
                       </span>
                       <span style={{ fontSize: "11px", color: "#818cf8", fontFamily: "var(--font-mono)" }}>
                         {a.confidence != null ? a.confidence + "%" : "-"}
@@ -334,12 +334,12 @@ export default function ReportsView() {
               padding: "6px 14px", borderRadius: "6px", cursor: "pointer",
               background: "rgba(34,211,238,0.08)", border: "1px solid rgba(34,211,238,0.25)",
               color: "#22d3ee", fontSize: "11px", fontWeight: 600, fontFamily: "var(--font-mono)",
-            }}>↓ CSV</button>
+            }}>? CSV</button>
           </div>
         </div>
       )}
 
-      {/* ── TAB: AI REPORT ── */}
+      {/* -- TAB: AI REPORT -- */}
       {activeTab === "ai report" && (
         <div style={{
           background: "#111318", border: "1px solid rgba(129,140,248,0.2)",
@@ -357,7 +357,7 @@ export default function ReportsView() {
               color: aiLoading ? "#3d4660" : "#818cf8",
               fontSize: "12px", fontWeight: 600, fontFamily: "var(--font-mono)", letterSpacing: "0.06em",
             }}>
-              {aiLoading ? "GENERATING..." : "↺ REGENERATE"}
+              {aiLoading ? "GENERATING..." : "? REGENERATE"}
             </button>
           </div>
 
@@ -372,7 +372,7 @@ export default function ReportsView() {
                 <circle cx="9" cy="9" r="7" stroke="#818cf8" strokeWidth="1.5" strokeDasharray="22 20" strokeLinecap="round"/>
               </svg>
               <span style={{ fontSize: "13px", color: "#818cf8", fontFamily: "var(--font-mono)", letterSpacing: "0.08em" }}>
-                AI ENGINE PROCESSING · ANALYZING {total} ALERTS
+                AI ENGINE PROCESSING � ANALYZING {total} ALERTS
               </span>
             </div>
           )}
@@ -397,7 +397,7 @@ export default function ReportsView() {
               padding: "48px", textAlign: "center", borderRadius: "10px",
               background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)",
             }}>
-              <div style={{ fontSize: "32px", marginBottom: "12px" }}>🤖</div>
+              <div style={{ fontSize: "32px", marginBottom: "12px" }}>??</div>
               <div style={{ fontSize: "14px", fontWeight: 600, color: "#a8b3cc", marginBottom: "6px" }}>No report generated yet</div>
               <div style={{ fontSize: "12px", color: "#3d4660" }}>Click "AI Report" in the header or "Regenerate" above</div>
             </div>
@@ -408,3 +408,7 @@ export default function ReportsView() {
     </div>
   );
 }
+
+
+
+

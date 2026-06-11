@@ -98,4 +98,12 @@ async def analyze_alert(alert_id: int, db: AsyncSession = Depends(get_db)):
     alert.ai_recommendations = analysis.get("recommendations")
     await db.commit()
 
-    return {"status": "analyzed", "analysis": analysis}
+    return {
+    "status": "analyzed",
+    "threat_summary": analysis.get("threat_summary"),
+    "risk_level": analysis.get("risk_level"),
+    "confidence": analysis.get("confidence"),
+    "attack_stage": analysis.get("attack_stage"),
+    "recommendations": analysis.get("recommendations"),
+    "false_positive_likelihood": analysis.get("false_positive_likelihood"),
+}

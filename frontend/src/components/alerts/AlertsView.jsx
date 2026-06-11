@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
 const SEV_COLOR = {
@@ -128,12 +128,12 @@ function AlertCard({ alert, onAnalyze, onStatusChange }) {
             gap: "12px",
           }}>
             {[
-              ["Source IP",  alert.source_ip  || "—"],
-              ["Dest IP",    alert.dest_ip    || "—"],
-              ["Tactic",     alert.mitre_tactic || "—"],
-              ["Risk Level", alert.risk_level || "—"],
-              ["Confidence", alert.confidence != null ? `${alert.confidence}%` : "—"],
-              ["Attack Stage", alert.attack_stage || "—"],
+              ["Source IP",  alert.source_ip  || "-"],
+              ["Dest IP",    alert.dest_ip    || "-"],
+              ["Tactic",     alert.mitre_tactic || "-"],
+              ["Risk Level", alert.risk_level || "-"],
+              ["Confidence", alert.confidence || "-"],
+              ["Attack Stage", alert.attack_stage || "-"],
             ].map(([k, v]) => (
               <div key={k}>
                 <div style={{
@@ -158,7 +158,7 @@ function AlertCard({ alert, onAnalyze, onStatusChange }) {
           </div>
 
           {/* AI summary */}
-          {alert.threat_summary && (
+          {alert.status === "analyzed" && alert.threat_summary && (
             <div style={{
               background: "var(--bg-elevated)",
               border: "1px solid var(--border-subtle)",
@@ -175,14 +175,22 @@ function AlertCard({ alert, onAnalyze, onStatusChange }) {
               }}>
                 AI Threat Summary
               </div>
-              <p style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                {alert.threat_summary}
-              </p>
+              <ul style={{
+  margin: 0,
+  paddingLeft: "18px",
+  color: "var(--text-secondary)",
+  fontSize: "12px",
+  lineHeight: 1.7,
+}}>
+  {(alert.recommendations || []).map((r, idx) => (
+    <li key={idx}>{r}</li>
+  ))}
+</ul>
             </div>
           )}
 
           {/* Recommendations */}
-          {alert.recommendations && (
+          {alert.status === "analyzed" && alert.recommendations && (
             <div style={{
               background: "var(--bg-elevated)",
               border: "1px solid var(--border-subtle)",
@@ -199,9 +207,20 @@ function AlertCard({ alert, onAnalyze, onStatusChange }) {
               }}>
                 Recommendations
               </div>
-              <p style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                {alert.recommendations}
-              </p>
+              <ul style={{
+  margin: 0,
+  paddingLeft: "18px",
+  color: "var(--text-secondary)",
+  fontSize: "12px",
+  lineHeight: 1.7,
+}}>
+  {(Array.isArray(alert.recommendations)
+    ? alert.recommendations
+    : [alert.recommendations]
+  ).map((r, idx) => (
+    <li key={idx}>{r}</li>
+  ))}
+</ul>
             </div>
           )}
 
@@ -223,7 +242,7 @@ function AlertCard({ alert, onAnalyze, onStatusChange }) {
                 transition: "all 0.15s",
               }}
             >
-              {analyzing ? "ANALYZING…" : "⚡ RUN AI ANALYSIS"}
+              {analyzing ? "ANALYZING" : "RUN AI ANALYSIS"}
             </button>
 
             {["investigating", "resolved", "false_positive"].map(st => (
@@ -252,7 +271,7 @@ function AlertCard({ alert, onAnalyze, onStatusChange }) {
                   e.currentTarget.style.color = "var(--text-muted)";
                 }}
               >
-                → {st.replace("_", " ")}
+                {st.replace("_", " ")}
               </button>
             ))}
           </div>
@@ -357,4 +376,14 @@ export default function AlertsView() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
 

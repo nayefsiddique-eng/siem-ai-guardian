@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 const VIEW_META = {
   overview:  { label: "Overview",     sub: "Threat landscape & operational status" },
@@ -78,3 +78,7 @@ export default function Topbar({ activeView }) {
     </header>
   );
 }
+
+
+
+

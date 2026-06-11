@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import Layout from "./components/layout/Layout";
 import OverviewView from "./components/overview/OverviewView";
 import AlertsView from "./components/alerts/AlertsView";
@@ -8,7 +8,7 @@ import ComplianceView from "./components/compliance/ComplianceView";
 import ReportsView from "./components/reports/ReportsView";
 import PlaybookView from "./components/playbook/PlaybookView";
 import { SiemProvider } from "./hooks/useSiem";
-
+import SentinalAIView from "./components/SentinalAI/SentinalAIView";
 export default function App() {
  const [view, setView] = useState("overview");
 
@@ -17,6 +17,7 @@ const views = {
   alerts: <AlertsView />,
   logs: <LogsView />,
   analysis: <AnalysisView />,
+  sentinalai: <SentinalAIView />,
   playbook: <PlaybookView />,
   reports: <ReportsView />,
   compliance: <ComplianceView />,
@@ -32,6 +33,12 @@ const views = {
     </SiemProvider>
   );
 }
+
+
+
+
+
+
 
 
 
