@@ -10,16 +10,17 @@ import PlaybookView from "./components/playbook/PlaybookView";
 import { SiemProvider } from "./hooks/useSiem";
 
 export default function App() {
-  const [view, setView] = useState("overview");
+ const [view, setView] = useState("overview");
 
-  const views = {
-    overview: <OverviewView />,
-    alerts:   <AlertsView />,
-    logs:     <LogsView />,
-    analysis: <AnalysisView />,
-    playbook: <PlaybookView />,
-    reports:  <ReportsView />,`r`n      compliance: <ComplianceView />,
-  };
+const views = {
+  overview: <OverviewView />,
+  alerts: <AlertsView />,
+  logs: <LogsView />,
+  analysis: <AnalysisView />,
+  playbook: <PlaybookView />,
+  reports: <ReportsView />,
+  compliance: <ComplianceView />,
+};
 
   return (
     <SiemProvider>

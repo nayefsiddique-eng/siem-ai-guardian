@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query
 from app.services.abuseipdb_service import lookup_ip, bulk_lookup
 
 router = APIRouter(prefix="/api/threat-intel", tags=["Threat Intelligence"])

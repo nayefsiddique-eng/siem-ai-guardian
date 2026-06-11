@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from pydantic import BaseModel, Field
@@ -8,7 +8,7 @@ from datetime import datetime
 from app.core.database import get_db
 from app.models.log_entry import LogEntry
 from app.services.detection_engine import detection_engine
-from app.services.gemini_service import gemini_service
+from app.services.ai_service import ai_analysis_service
 from app.services.mitre_service import enrich_alert
 from app.services.correlation_engine import correlate
 from app.services.tiering_engine import assign_tier, write_to_cold_storage, read_cold_storage, get_cold_storage_stats
@@ -16,7 +16,7 @@ from app.services.tiering_engine import assign_tier, write_to_cold_storage, read
 router = APIRouter()
 
 
-# ─── Pydantic Schemas ────────────────────────────────────────────────────────
+# --- Pydantic Schemas --------------------------------------------------------
 
 class LogIngestRequest(BaseModel):
     source_ip: str = Field(..., example="192.168.1.100")
@@ -35,7 +35,7 @@ class BulkIngestRequest(BaseModel):
     logs: List[LogIngestRequest]
 
 
-# ─── Routes ──────────────────────────────────────────────────────────────────
+# --- Routes ------------------------------------------------------------------
 
 @router.post("/ingest", summary="Ingest a single log entry")
 async def ingest_log(payload: LogIngestRequest, db: AsyncSession = Depends(get_db)):
@@ -50,7 +50,7 @@ async def ingest_log(payload: LogIngestRequest, db: AsyncSession = Depends(get_d
     # If alert triggered, run AI analysis asynchronously (don't block response)
     if alert:
         try:
-            analysis = await gemini_service.analyze_alert(alert, [log])
+            analysis = await ai_analysis_service.analyze_alert(alert, [log])
             alert.ai_analysis = analysis.get("threat_summary")
             alert.ai_risk_level = analysis.get("risk_level")
             alert.ai_recommendations = analysis.get("recommendations")

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Report generation service - JSON summaries + PDF export
 """
 from datetime import datetime, timezone

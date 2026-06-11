@@ -7,7 +7,7 @@ from typing import Optional
 from app.core.database import get_db
 from app.models.alert import Alert
 from app.models.log_entry import LogEntry
-from app.services.gemini_service import gemini_service
+from app.services.ai_service import ai_analysis_service
 
 router = APIRouter()
 
@@ -77,7 +77,7 @@ async def update_alert(
 
 @router.post("/{alert_id}/analyze", summary="Trigger AI analysis for an alert")
 async def analyze_alert(alert_id: int, db: AsyncSession = Depends(get_db)):
-    """Manually trigger Gemini AI analysis for an existing alert."""
+    """Manually trigger AI analysis for an existing alert."""
     result = await db.execute(select(Alert).where(Alert.id == alert_id))
     alert = result.scalar_one_or_none()
     if not alert:
@@ -91,7 +91,7 @@ async def analyze_alert(alert_id: int, db: AsyncSession = Depends(get_db)):
         )
         related_logs = logs_result.scalars().all()
 
-    analysis = await gemini_service.analyze_alert(alert, related_logs)
+    analysis = await ai_analysis_service.analyze_alert(alert, related_logs)
 
     alert.ai_analysis = analysis.get("threat_summary")
     alert.ai_risk_level = analysis.get("risk_level")

@@ -44,13 +44,13 @@ async def lookup_ip(ip: str, max_age_days: int = 90) -> dict:
                     "threat_level":         _threat_level(data.get("abuseConfidenceScore", 0)),
                 }
             elif res.status_code == 429:
-                return {"error": "Rate limit exceeded — try again in a few minutes"}
+                return {"error": "Rate limit exceeded - try again in a few minutes"}
             elif res.status_code == 422:
                 return {"error": f"Invalid IP address: {ip}"}
             else:
                 return {"error": f"AbuseIPDB returned status {res.status_code}"}
     except httpx.TimeoutException:
-        return {"error": "Request timed out — AbuseIPDB may be slow"}
+        return {"error": "Request timed out � AbuseIPDB may be slow"}
     except Exception as e:
         return {"error": str(e)}
 
