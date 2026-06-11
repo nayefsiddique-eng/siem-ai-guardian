@@ -1,26 +1,26 @@
 ﻿# Python
+venv/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .env
-venv/
-.venv/
 *.db
-*.db-shm
-*.db-wal
-cold_storage/
 
 # Node
 node_modules/
 dist/
-.vite/
-*.local
+.next/
 
-# OS
-.DS_Store
-Thumbs.db
+# Generated files
+*.pdf
+compliance_report.pdf
 
-# Editors
-.vscode/
-.idea/
+# Helper scripts (optional to keep)
+backend/append_endpoint.py
+backend/pdf_endpoint.py
+backend/write_pdf_endpoint.py
+backend/compliance_new.py
+
+# Misc
+src/.gitignore

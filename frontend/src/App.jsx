@@ -18,8 +18,7 @@ export default function App() {
     logs:     <LogsView />,
     analysis: <AnalysisView />,
     playbook: <PlaybookView />,
-    reports:  <ReportsView />
-    compliance: <ComplianceView />,,
+    reports:  <ReportsView />,`r`n      compliance: <ComplianceView />,
   };
 
   return (
@@ -32,5 +31,6 @@ export default function App() {
     </SiemProvider>
   );
 }
+
 
 
