@@ -34,7 +34,7 @@ const TEST_EVENTS = [
       source_ip: "192.168.1.55", dest_ip: "192.168.1.1",
       event_type: "privilege_escalation", severity: "critical",
       hostname: "workstation-07", username: "jdoe",
-      raw_message: "sudo su root executed by jdoe — UAC bypass attempted",
+      raw_message: "sudo su root executed by jdoe - UAC bypass attempted",
     },
   },
   {
@@ -49,8 +49,8 @@ const TEST_EVENTS = [
 ];
 
 function LogRow({ log }) {
-  const sev = (log.severity || "info").toLowerCase();
-  const color = SEV_COLOR[sev] || "var(--text-muted)";
+  const sev = (log.severity || "-").toLowerCase();
+  const color = SEV_COLOR[sev] || "-";
 
   return (
     <div style={{
@@ -70,13 +70,13 @@ function LogRow({ log }) {
         {sev}
       </span>
       <span style={{ color: "var(--text-muted)" }}>
-        {log.source_ip || "—"}
+        {log.source_ip || "-"}
       </span>
       <span style={{ color: "var(--text-muted)" }}>
-        {log.dest_ip || "—"}
+        {log.dest_ip || "-"}
       </span>
       <span style={{ color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {log.event_type || "—"}
+        {log.event_type || "-"}
       </span>
       <span style={{
         color: "var(--text-secondary)",
@@ -85,7 +85,7 @@ function LogRow({ log }) {
         whiteSpace: "nowrap",
         fontSize: "10px",
       }}>
-        {log.raw_message || "—"}
+        {log.raw_message || "-"}
       </span>
     </div>
   );
@@ -163,7 +163,7 @@ export default function LogsView() {
               }
             }}
           >
-            {injecting === evt.label ? "Injecting…" : `+ ${evt.label}`}
+            {injecting === evt.label ? "Injecting..." : `+ ${evt.label}`}
           </button>
         ))}
         <button
@@ -223,7 +223,7 @@ export default function LogsView() {
               fontSize: "11px",
               color: "var(--text-muted)",
             }}>
-              No logs yet · inject a test event to begin
+              No logs yet. Inject a test event to begin.
             </div>
           ) : (
             [...logs].reverse().map((log, i) => (
@@ -245,7 +245,7 @@ export default function LogsView() {
             fontSize: "10px",
             color: "var(--text-muted)",
           }}>
-            {logs?.length ?? 0} events indexed
+            {logs?.length || 0} events indexed
           </span>
           <span style={{
             display: "flex",
@@ -267,6 +267,17 @@ export default function LogsView() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

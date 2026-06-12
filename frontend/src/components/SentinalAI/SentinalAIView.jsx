@@ -199,3 +199,10 @@ export default function SentinalAIView() {
     </div>
   );
 }
+
+
+
+
+
+
+

@@ -9,8 +9,8 @@ const NAV_ITEMS = [
 
 export default function Sidebar({ activeView, setActiveView }) {
   const { stats, loading, lastRefresh, refresh } = useSiem();
-  const openAlerts = stats?.overview?.open_alerts ?? 0;
-  const criticalAlerts = stats?.overview?.critical_alerts_24h ?? 0;
+  const openAlerts = stats?.overview?.open_alerts || 0;
+  const criticalAlerts = stats?.overview?.critical_alerts_24h  0;
 
   return (
     <aside className="w-56 flex-shrink-0 bg-gray-900 border-r border-gray-800 flex flex-col">
@@ -79,6 +79,14 @@ export default function Sidebar({ activeView, setActiveView }) {
     </aside>
   );
 }
+
+
+
+
+
+
+
+
 
 
 

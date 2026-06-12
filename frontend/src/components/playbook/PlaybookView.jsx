@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+ï»¿import { useState, useEffect } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
 export default function PlaybookView() {
@@ -6,7 +6,7 @@ export default function PlaybookView() {
   const [selected, setSelected] = useState(null);
   const [playbook, setPlaybook] = useState(null);
   const [loading, setLoading]   = useState(false);
-  const [status, setStatus]     = useState(null);
+  const [status, setStatus] = useState(null);
 
   useEffect(() => { fetchAlerts(); }, []);
 
@@ -19,7 +19,7 @@ export default function PlaybookView() {
     try {
       const res = await fetch(BASE + "/api/playbooks/" + selected.id + "/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token() },
+        headers: { "Content-Type": "application/json" },
       });
       const data = await res.json();
       setPlaybook(data);
@@ -28,21 +28,79 @@ export default function PlaybookView() {
   };
 
   const approve = async () => {
-    if (!playbook) return;
-    const res = await fetch(BASE + "/api/playbooks/" + playbook.id + "/approve", {
-      method: "POST", headers: { Authorization: "Bearer " + token() },
+  if (!playbook) return;
+
+  try {
+    const res = await fetch(
+      BASE + "/api/playbooks/" + playbook.alert_id + "/approve",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setPlaybook(data.playbook);
+      setStatus({
+        type: "success",
+        msg: "Playbook approved successfully."
+      });
+    } else {
+      setStatus({
+        type: "error",
+        msg: data.detail || "Approval failed."
+      });
+    }
+  } catch {
+    setStatus({
+      type: "error",
+      msg: "Approval request failed."
     });
-    if (res.ok) setStatus({ type: "success", msg: "Playbook approved and queued for execution." });
-    else setStatus({ type: "error", msg: "Approval failed." });
-  };
+  }
+};
 
   const reject = async () => {
-    if (!playbook) return;
-    const res = await fetch(BASE + "/api/playbooks/" + playbook.id + "/reject", {
-      method: "POST", headers: { Authorization: "Bearer " + token() },
+  if (!playbook) return;
+
+  try {
+    const res = await fetch(
+      BASE + "/api/playbooks/" + playbook.alert_id + "/reject",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          reason: "Rejected by analyst"
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setPlaybook(data.playbook);
+      setStatus({
+        type: "warn",
+        msg: "Playbook rejected."
+      });
+    } else {
+      setStatus({
+        type: "error",
+        msg: data.detail || "Rejection failed."
+      });
+    }
+  } catch {
+    setStatus({
+      type: "error",
+      msg: "Rejection request failed."
     });
-    if (res.ok) { setStatus({ type: "warn", msg: "Playbook rejected." }); setPlaybook(null); }
-  };
+  }
+};
 
   const openAlerts = (alerts || []).filter(a => a.status === "open" || a.status === "investigating");
 
@@ -71,11 +129,11 @@ export default function PlaybookView() {
         {/* Alert selector */}
         <div style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "12px", overflow: "hidden" }}>
           <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)", fontSize: "11px", fontWeight: 600, color: "#5a6480", letterSpacing: "0.12em", textTransform: "uppercase" }}>
-            Active Alerts — {openAlerts.length} available
+            Active Alerts | {openAlerts.length} available
           </div>
           <div style={{ maxHeight: "400px", overflowY: "auto" }}>
             {openAlerts.length === 0
-              ? <div style={{ padding: "32px", textAlign: "center", fontSize: "13px", color: "#3d4660" }}>No open alerts — inject test events first</div>
+              ? <div style={{ padding: "32px", textAlign: "center", fontSize: "13px", color: "#3d4660" }}>No open alerts. Inject test events first.</div>
               : openAlerts.map(a => {
                   const SEV_COLOR = { critical: "#f87171", high: "#fb923c", medium: "#fbbf24", low: "#34d399" };
                   const color = SEV_COLOR[a.severity] || "#5a6480";
@@ -98,7 +156,7 @@ export default function PlaybookView() {
                         </span>
                       </div>
                       <div style={{ fontSize: "11px", color: "#5a6480", fontFamily: "var(--font-mono)" }}>
-                        {a.source_ip || "-"} ? {a.dest_ip || "-"}
+                        {a.source_ip || "-"} {" ? "} {a.dest_ip || "-"}
                       </div>
                     </div>
                   );
@@ -120,11 +178,11 @@ export default function PlaybookView() {
               color: !selected || loading ? "#3d4660" : "#818cf8",
               fontSize: "11px", fontWeight: 600, fontFamily: "var(--font-mono)", letterSpacing: "0.06em",
             }}>
-              {loading ? "GENERATING..." : "? GENERATE"}
+              {loading ? "GENERATING..." : "GENERATE PLAYBOOK"}
             </button>
           </div>
 
-          <div style={{ flex: 1, padding: "18px", overflowY: "auto", maxHeight: "360px" }}>
+          <div style={{ flex: 1, padding: "18px", overflowY: "auto", maxHeight: "none" }}>
             {loading && (
               <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "24px 0" }}>
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ animation: "spin 1.2s linear infinite" }}>
@@ -137,7 +195,7 @@ export default function PlaybookView() {
 
             {!loading && !playbook && !selected && (
               <div style={{ textAlign: "center", padding: "40px 0", color: "#3d4660", fontSize: "13px" }}>
-                ? Select an alert to begin
+                Select an alert to begin
               </div>
             )}
 
@@ -151,25 +209,121 @@ export default function PlaybookView() {
 
             {!loading && playbook && (
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <pre style={{ fontSize: "12px", color: "#a8b3cc", lineHeight: 1.8, whiteSpace: "pre-wrap", wordBreak: "break-word", fontFamily: "var(--font-ui,system-ui)", margin: 0 }}>
-                  {typeof playbook === "string" ? playbook : JSON.stringify(playbook, null, 2)}
-                </pre>
+                <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+
+  <div>
+    <div style={{ fontSize: "26px", fontWeight: 700 }}>
+      {playbook.playbook_name}
+    </div>
+
+    <div style={{ marginTop: "10px", color: "#94a3b8" }}>
+      Risk Level:
+      <span style={{ color: "#f87171", marginLeft: "8px" }}>
+        {playbook.risk_level?.toUpperCase()}
+      </span>
+    </div>
+  </div>
+
+  <div>
+    <div style={{ fontWeight: 700, marginBottom: "10px" }}>
+      Threat Summary
+    </div>
+
+    <div style={{ color: "#cbd5e1", lineHeight: 1.8 }}>
+      {(playbook.threat_summary || "").replace(/\uFFFD/g, "-")}
+    </div>
+  </div>
+
+  <div>
+    <div style={{ fontWeight: 700 }}>
+      Estimated Response Time
+    </div>
+
+    <div style={{ color: "#cbd5e1" }}>
+      {playbook.estimated_time_minutes} minutes
+    </div>
+  </div>
+
+  <div>
+    <div style={{ fontWeight: 700, marginBottom: "16px" }}>
+      Response Steps
+    </div>
+
+    {playbook.steps?.map((step) => (
+      <div
+        key={step.step_number}
+        style={{
+          padding: "18px",
+          marginBottom: "16px",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: "14px"
+        }}
+      >
+
+        <div style={{ fontWeight: 700 }}>
+          Step {step.step_number} - {(step.action || "").replace(/\uFFFD/g, "-")}
+        </div>
+
+        <div style={{
+          marginTop: "10px",
+          color: "#94a3b8",
+          lineHeight: 1.7
+        }}>
+          {(step.description || "").replace(/\uFFFD/g, "-")}
+        </div>
+
+        {step.command && (
+          <div style={{
+            marginTop: "14px",
+            padding: "12px",
+            background: "#0f172a",
+            borderRadius: "10px",
+            fontFamily: "monospace",
+            color: "#38bdf8"
+          }}>
+            {step.command}
+          </div>
+        )}
+
+        <div style={{
+          marginTop: "14px",
+          fontSize: "13px",
+          color: "#94a3b8"
+        }}>
+          Approval Required: {step.requires_approval ? "Yes" : "No"}
+        </div>
+
+      </div>
+    ))}
+  </div>
+
+  <div>
+    <div style={{ fontWeight: 700 }}>
+      Rollback Plan
+    </div>
+
+    <div style={{ color: "#cbd5e1", marginTop: "8px" }}>
+      {playbook.rollback_plan}
+    </div>
+  </div>
+
+</div>
               </div>
             )}
           </div>
 
           {playbook && !loading && (
-            <div style={{ padding: "14px 18px", borderTop: "1px solid rgba(255,255,255,0.07)", display: "flex", gap: "8px" }}>
-              <button onClick={approve} style={{
+            <div style={{ padding: "14px 18px", borderTop: "1px solid rgba(255,255,255,0.07)", display: "flex", gap: "8px", position: "relative", zIndex: 9999 }}>
+              <button disabled={false} onClick={approve} style={{
                 flex: 1, padding: "10px", borderRadius: "8px", cursor: "pointer",
                 background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.3)",
                 color: "#34d399", fontSize: "12px", fontWeight: 600, fontFamily: "var(--font-mono)",
-              }}>? APPROVE</button>
-              <button onClick={reject} style={{
+              }}>APPROVE</button>
+              <button disabled={false} onClick={reject} style={{
                 flex: 1, padding: "10px", borderRadius: "8px", cursor: "pointer",
                 background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)",
                 color: "#f87171", fontSize: "12px", fontWeight: 600, fontFamily: "var(--font-mono)",
-              }}>? REJECT</button>
+              }}>REJECT</button>
             </div>
           )}
         </div>
@@ -177,6 +331,42 @@ export default function PlaybookView() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

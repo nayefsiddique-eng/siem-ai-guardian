@@ -25,7 +25,7 @@ function StatCard({ label, value, sub, accent }) {
       flex: 1, minWidth: 0, borderTop: "2px solid " + accent,
     }}>
       <div style={{ fontSize: "10px", fontFamily: "var(--font-mono)", letterSpacing: "0.14em", color: "#5a6480", marginBottom: "10px" }}>{label}</div>
-      <div style={{ fontSize: "32px", fontWeight: 700, color: "#f0f2f7", lineHeight: 1, fontFamily: "var(--font-mono)" }}>{value ?? "—"}</div>
+      <div style={{ fontSize: "32px", fontWeight: 700, color: "#f0f2f7", lineHeight: 1, fontFamily: "var(--font-mono)" }}>{value || "-"}</div>
       <div style={{ fontSize: "11px", color: "#5a6480", marginTop: "6px" }}>{sub}</div>
     </div>
   );
@@ -128,7 +128,7 @@ function AlertTrendChart({ alerts }) {
     <div style={{ background: "#111318", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.07)", padding: "20px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
         <div style={{ fontSize: "10px", fontFamily: "var(--font-mono)", letterSpacing: "0.14em", color: "#5a6480" }}>
-          ALERT TREND · LAST 24 HOURS
+          ALERT TREND | LAST 24 HOURS
         </div>
         <div style={{ display: "flex", gap: "12px" }}>
           {SEV.map(s => (
@@ -264,9 +264,9 @@ export default function OverviewView() {
 
       {/* Stat cards */}
       <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-        <StatCard label="TOTAL ALERTS"  value={stats?.total_alerts  ?? alerts.length}                                 sub="all time"         accent="#818cf8"/>
-        <StatCard label="OPEN ALERTS"   value={stats?.open_alerts   ?? alerts.filter(a=>a.status==="open").length}    sub="pending triage"   accent="#fb923c"/>
-        <StatCard label="LOGS INGESTED" value={stats?.total_logs    ?? 0}                                             sub="indexed events"   accent="#22d3ee"/>
+        <StatCard label="TOTAL ALERTS"  value={stats?.total_alerts || alerts.length}                                 sub="all time"         accent="#818cf8"/>
+        <StatCard label="OPEN ALERTS"   value={stats?.open_alerts || alerts.filter(a=>a.status==="open").length}    sub="pending triage"   accent="#fb923c"/>
+        <StatCard label="LOGS INGESTED" value={stats?.total_logs || 0}                                             sub="indexed events"   accent="#22d3ee"/>
         <StatCard label="CRITICAL"      value={dist.critical}                                                         sub="immediate action" accent="#f87171"/>
       </div>
 
@@ -316,7 +316,7 @@ export default function OverviewView() {
         </div>
         {recentAlerts.length === 0 ? (
           <div style={{ padding: "48px 20px", textAlign: "center" }}>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "#3d4660" }}>No alerts detected · System monitoring active</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "#3d4660" }}>No alerts detected. System monitoring active.</div>
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -335,11 +335,11 @@ export default function OverviewView() {
                 >
                   <td style={{ padding: "11px 20px" }}>
                     <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.1em", color: SEV_COLOR[a.severity] || "#5a6480", fontWeight: 600 }}>
-                      {(a.severity||"—").toUpperCase()}
+                      {(a.severity||"-").toUpperCase()}
                     </span>
                   </td>
                   <td style={{ padding: "11px 20px", fontSize: "12px", color: "#a8b3cc" }}>
-                    {(a.alert_type||a.title||"—").replace(/_/g," ")}
+                    {(a.alert_type||a.title||"-").replace(/_/g," ")}
                   </td>
                   <td style={{ padding: "11px 20px" }}>
                     <span style={{
@@ -349,11 +349,11 @@ export default function OverviewView() {
                       border: "1px solid " + (a.status==="open" ? "rgba(251,146,60,0.25)" : "rgba(52,211,153,0.2)"),
                       color: a.status==="open" ? "#fb923c" : "#34d399",
                     }}>
-                      {(a.status||"unknown").toUpperCase()}
+                      {(a.status||"-").toUpperCase()}
                     </span>
                   </td>
                   <td style={{ padding: "11px 20px", fontFamily: "var(--font-mono)", fontSize: "11px", color: "#5a6480" }}>
-                    {a.created_at ? new Date(a.created_at).toLocaleTimeString() : "—"}
+                    {a.created_at ? new Date(a.created_at).toLocaleTimeString() : "-"}
                   </td>
                 </tr>
               ))}
@@ -365,6 +365,18 @@ export default function OverviewView() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

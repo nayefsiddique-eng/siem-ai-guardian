@@ -132,7 +132,7 @@ export default function Sidebar({ active, onNavigate, mobileOpen, onClose }) {
                 fontSize: "10px", color: "#5a6480", marginTop: "2px",
                 fontFamily: "var(--font-mono)", letterSpacing: "0.08em",
               }}>
-                SOC • AI • v1.0
+                SOC AI v1.0
               </div>
             </div>
           </div>
@@ -294,13 +294,20 @@ export default function Sidebar({ active, onNavigate, mobileOpen, onClose }) {
             fontSize: "11px", color: "#3d4660",
             fontFamily: "var(--font-mono)",
           }}>
-            SentinelAI • 2026
+            SentinelAI 2026
           </div>
         </div>
       </aside>
     </>
   );
 }
+
+
+
+
+
+
+
 
 
 

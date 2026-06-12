@@ -38,7 +38,7 @@ function StatCard({ label, value, sub, accent, glow }) {
         color: "var(--text-primary)",
         lineHeight: 1,
       }}>
-        {value ?? "—"}
+        {value || "-"}
       </span>
       {sub && (
         <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
@@ -151,7 +151,7 @@ function AlertRow({ alert }) {
         color: "var(--text-muted)",
         textAlign: "right",
       }}>
-        {alert.created_at ? new Date(alert.created_at).toLocaleTimeString() : "—"}
+        {alert.created_at ? new Date(alert.created_at).toLocaleTimeString() : "-"}
       </span>
     </div>
   );
@@ -169,10 +169,10 @@ export default function DashboardHome() {
   const recentAlerts = (alerts || []).slice(0, 8);
 
   const sevCounts = {
-    critical: s.critical_alerts ?? 0,
-    high:     s.high_alerts     ?? 0,
-    medium:   s.medium_alerts   ?? 0,
-    low:      s.low_alerts      ?? 0,
+    critical: s.critical_alerts  0,
+    high:     s.high_alerts      0,
+    medium:   s.medium_alerts    0,
+    low:      s.low_alerts       0,
   };
   const maxSev = Math.max(...Object.values(sevCounts), 1);
 
@@ -191,28 +191,28 @@ export default function DashboardHome() {
       }}>
         <StatCard
           label="Total Alerts"
-          value={s.total_alerts ?? 0}
+          value={s.total_alerts  0}
           sub="all time"
           accent="var(--accent-indigo)"
           glow="0 0 12px rgba(99,102,241,0.5)"
         />
         <StatCard
           label="Open Alerts"
-          value={s.open_alerts ?? 0}
+          value={s.open_alerts  0}
           sub="pending triage"
           accent="var(--severity-high)"
           glow="0 0 12px rgba(251,146,60,0.5)"
         />
         <StatCard
           label="Logs Ingested"
-          value={s.total_logs ?? 0}
+          value={s.total_logs  0}
           sub="indexed events"
           accent="var(--accent-cyan)"
           glow="0 0 12px rgba(34,211,238,0.4)"
         />
         <StatCard
           label="Critical"
-          value={s.critical_alerts ?? 0}
+          value={s.critical_alerts  0}
           sub="immediate action"
           accent="var(--severity-critical)"
           glow="0 0 12px rgba(244,63,94,0.5)"
@@ -383,7 +383,7 @@ export default function DashboardHome() {
             fontSize: "12px",
             fontFamily: "'JetBrains Mono', monospace",
           }}>
-            No alerts detected · System monitoring active
+            No alerts detected. System monitoring active.
           </div>
         ) : (
           recentAlerts.map(a => <AlertRow key={a.id} alert={a} />)
@@ -392,6 +392,16 @@ export default function DashboardHome() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
 
 
 

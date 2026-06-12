@@ -218,7 +218,7 @@ function ControlsTab({ data }) {
                   const st = row.frameworks[fw];
                   if (!st) return (
                     <td key={fw} style={{ padding: "11px 16px", textAlign: "center" }}>
-                      <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>—</span>
+                      <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>ï¿½</span>
                     </td>
                   );
                   return (
@@ -229,14 +229,14 @@ function ControlsTab({ data }) {
                           width: "20px", height: "20px", borderRadius: "50%",
                           background: "rgba(248,113,113,0.12)", border: "1px solid rgba(248,113,113,0.3)",
                           color: "#f87171", fontSize: "11px", fontWeight: 700,
-                        }}>?</span>
+                        }}></span>
                       ) : (
                         <span style={{
                           display: "inline-flex", alignItems: "center", justifyContent: "center",
                           width: "20px", height: "20px", borderRadius: "50%",
                           background: "rgba(52,211,153,0.10)", border: "1px solid rgba(52,211,153,0.25)",
                           color: "#34d399", fontSize: "11px", fontWeight: 700,
-                        }}>?</span>
+                        }}></span>
                       )}
                     </td>
                   );
@@ -254,7 +254,7 @@ function AttackMappingTab({ data }) {
   const attacks = Object.entries(data.attack_mapping || {});
   if (attacks.length === 0) return (
     <div style={{ ...card, textAlign: "center", padding: "48px", fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--text-muted)" }}>
-      No attack data — ingest logs to populate
+      No attack data available. Ingest logs to populate.
     </div>
   );
 
@@ -371,7 +371,7 @@ export default function ComplianceView() {
               Compliance Monitor
             </div>
             <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-              SOC 2 · ISO 27001 · GDPR · NIST CSF
+              SOC 2 | ISO 27001 | GDPR | NIST CSF
             </div>
           </div>
           {data && <StatusBadge status={data.overall_status} large />}
@@ -484,6 +484,17 @@ export default function ComplianceView() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
