@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+﻿from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel, EmailStr
@@ -13,13 +13,13 @@ from app.services.auth_service import (
 router = APIRouter()
 
 
-# ── Schemas ───────────────────────────────────────────────────────────────────
+# â”€â”€ Schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class RegisterRequest(BaseModel):
     email: str
     password: str
     full_name: str
     tenant_name: str      # creates a new tenant for this user
-    tenant_slug: str      # e.g. "acme-corp" — must be unique
+    tenant_slug: str      # e.g. "acme-corp" â€” must be unique
 
 class LoginRequest(BaseModel):
     email: str
@@ -32,7 +32,7 @@ class CreateUserRequest(BaseModel):
     role: UserRole = UserRole.viewer
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# â”€â”€ Routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @router.post("/register", summary="Register a new tenant + admin user")
 async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """
@@ -136,3 +136,6 @@ async def create_user(
     await db.commit()
 
     return {"status": "created", "user": user.to_dict()}
+
+
+

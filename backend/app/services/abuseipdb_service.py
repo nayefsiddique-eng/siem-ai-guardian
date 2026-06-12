@@ -50,7 +50,7 @@ async def lookup_ip(ip: str, max_age_days: int = 90) -> dict:
             else:
                 return {"error": f"AbuseIPDB returned status {res.status_code}"}
     except httpx.TimeoutException:
-        return {"error": "Request timed out � AbuseIPDB may be slow"}
+        return {"error": "Request timed out - AbuseIPDB may be slow"}
     except Exception as e:
         return {"error": str(e)}
 
@@ -67,4 +67,7 @@ def _threat_level(score: int) -> str:
     if score >= 25: return "medium"
     if score >= 5:  return "low"
     return "clean"
+
+
+
 

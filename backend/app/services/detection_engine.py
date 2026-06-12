@@ -1,5 +1,5 @@
-"""
-Detection Engine — Rule-based threat detection.
+﻿"""
+Detection Engine â€” Rule-based threat detection.
 Each rule checks a pattern in the incoming log and may trigger an Alert.
 """
 from datetime import datetime, timedelta, timezone
@@ -45,7 +45,7 @@ MITRE_MAP = {
 
 # Known malicious IPs (in production: pull from threat intel feeds)
 THREAT_INTEL_BLACKLIST = set([
-    "10.0.0.666",  # placeholder — real feeds loaded via config
+    "10.0.0.666",  # placeholder â€” real feeds loaded via config
 ])
 
 
@@ -281,3 +281,6 @@ class DetectionEngine:
 
 
 detection_engine = DetectionEngine()
+
+
+

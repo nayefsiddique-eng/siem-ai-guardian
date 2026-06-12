@@ -1,4 +1,4 @@
-"""
+﻿"""
 Compliance Mapping Engine
 Maps security alerts to regulatory framework controls automatically.
 Frameworks: SOC 2, ISO 27001, GDPR, NIST CSF
@@ -146,3 +146,6 @@ def generate_compliance_report(alerts: list) -> dict:
         "unique_controls_triggered": len({f"{h['framework']}-{h['control_id']}" for h in control_hits}),
         "control_details": control_hits,
     }
+
+
+

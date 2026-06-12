@@ -1,4 +1,4 @@
-"""
+﻿"""
 Log Tiering Engine
 Scores incoming logs and routes them to hot or cold storage.
 Hot  = SQLite DB (fast queries, recent/critical data)
@@ -107,3 +107,6 @@ tiering_engine_instance = {
     "read_cold_storage": read_cold_storage,
     "get_cold_storage_stats": get_cold_storage_stats,
 }
+
+
+

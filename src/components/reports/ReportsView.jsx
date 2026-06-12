@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -57,7 +57,7 @@ async function downloadPDF() {
   const res = await fetch(BASE+"/api/reports/pdf", {
     headers: { Authorization: "Bearer "+token },
   });
-  if (!res.ok) { alert("PDF generation failed — check backend is running."); return; }
+  if (!res.ok) { alert("PDF generation failed � check backend is running."); return; }
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   Object.assign(document.createElement("a"),{href:url,download:"sentinelops-report-"+Date.now()+".pdf"}).click();
@@ -117,7 +117,7 @@ export default function ReportsView() {
         background:"linear-gradient(135deg,rgba(129,140,248,0.2),rgba(34,211,238,0.1))",
         border:"1px solid rgba(129,140,248,0.3)",
         display:"flex", alignItems:"center", justifyContent:"center", fontSize:"26px",
-      }}>📋</div>
+      }}></div>
       <div style={{ fontSize:"16px", fontWeight:700, color:"#f0f2f7" }}>Reports & Intelligence</div>
       <div style={{ fontSize:"13px", color:"#5a6480", textAlign:"center", maxWidth:"320px", lineHeight:1.6 }}>
         Load alert data to generate threat summaries, download PDF reports, and run AI incident analysis.
@@ -155,7 +155,7 @@ export default function ReportsView() {
           fontSize:"13px", fontWeight:600,
           boxShadow:"0 8px 32px rgba(0,0,0,0.4)",
         }}>
-          {toast.type==="error" ? "✕ " : "✓ "}{toast.msg}
+          {toast.type==="error" ? "? " : "? "}{toast.msg}
         </div>
       )}
 
@@ -167,17 +167,17 @@ export default function ReportsView() {
         <div>
           <div style={{ fontSize:"15px", fontWeight:700, color:"#f0f2f7" }}>Threat Intelligence Report</div>
           <div style={{ fontSize:"12px", color:"#5a6480", marginTop:"3px" }}>
-            {new Date().toUTCString()} · {total} alerts loaded
+            {new Date().toUTCString()} � {total} alerts loaded
           </div>
         </div>
         <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
           {[
-            { label:"↓ Export CSV",  action:()=>{ exportCSV(alerts); showToast("CSV exported"); },  color:"#22d3ee", border:"rgba(34,211,238,0.3)",  bg:"rgba(34,211,238,0.08)"  },
-            { label:"↓ Export JSON", action:()=>{ exportJSON(alerts); showToast("JSON exported"); }, color:"#a78bfa", border:"rgba(167,139,250,0.3)", bg:"rgba(167,139,250,0.08)" },
-            { label: pdfLoading ? "GENERATING..." : "↓ Download PDF",
+            { label:"? Export CSV",  action:()=>{ exportCSV(alerts); showToast("CSV exported"); },  color:"#22d3ee", border:"rgba(34,211,238,0.3)",  bg:"rgba(34,211,238,0.08)"  },
+            { label:"? Export JSON", action:()=>{ exportJSON(alerts); showToast("JSON exported"); }, color:"#a78bfa", border:"rgba(167,139,250,0.3)", bg:"rgba(167,139,250,0.08)" },
+            { label: pdfLoading ? "GENERATING..." : "? Download PDF",
               action: handlePDF,
               color:"#fb923c", border:"rgba(251,146,60,0.3)", bg:"rgba(251,146,60,0.08)" },
-            { label:"✦ AI Report",   action:runAI,                                                  color:"#818cf8", border:"rgba(129,140,248,0.35)", bg:"rgba(129,140,248,0.12)" },
+            { label:"? AI Report",   action:runAI,                                                  color:"#818cf8", border:"rgba(129,140,248,0.35)", bg:"rgba(129,140,248,0.12)" },
           ].map(b => (
             <button key={b.label} onClick={b.action} disabled={pdfLoading && b.label.includes("PDF")} style={{
               padding:"9px 16px", borderRadius:"8px", cursor:"pointer",
@@ -194,11 +194,11 @@ export default function ReportsView() {
 
       {/* Stat cards */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))", gap:"12px" }}>
-        <StatCard label="Total Alerts" value={total}    sub="all time"         color="#818cf8" icon="🔔"/>
-        <StatCard label="Open"         value={open}     sub="pending triage"   color="#fbbf24" icon="⚠️"/>
-        <StatCard label="Critical"     value={critical} sub="immediate action" color="#f87171" icon="🔴"/>
-        <StatCard label="Resolved"     value={resolved} sub="closed"           color="#34d399" icon="✅"/>
-        <StatCard label="False Pos."   value={fp}       sub="noise filtered"   color="#a78bfa" icon="🚫"/>
+        <StatCard label="Total Alerts" value={total}    sub="all time"         color="#818cf8" icon=""/>
+        <StatCard label="Open"         value={open}     sub="pending triage"   color="#fbbf24" icon=""/>
+        <StatCard label="Critical"     value={critical} sub="immediate action" color="#f87171" icon=""/>
+        <StatCard label="Resolved"     value={resolved} sub="closed"           color="#34d399" icon="?"/>
+        <StatCard label="False Pos."   value={fp}       sub="noise filtered"   color="#a78bfa" icon=""/>
       </div>
 
       {/* Tabs */}
@@ -220,7 +220,7 @@ export default function ReportsView() {
         ))}
       </div>
 
-      {/* ── SUMMARY TAB ── */}
+      {/* -- SUMMARY TAB -- */}
       {activeTab==="summary" && (
         <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
 
@@ -260,7 +260,7 @@ export default function ReportsView() {
               const counts = alerts.reduce((acc,a) => { if(a.mitre_tactic) acc[a.mitre_tactic]=(acc[a.mitre_tactic]||0)+1; return acc; },{});
               const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
               return entries.length===0
-                ? <div style={{ fontSize:"13px", color:"#3d4660", fontStyle:"italic" }}>No tactic data yet — inject logs to populate.</div>
+                ? <div style={{ fontSize:"13px", color:"#3d4660", fontStyle:"italic" }}>No tactic data yet � inject logs to populate.</div>
                 : <div style={{ display:"flex", flexWrap:"wrap", gap:"8px" }}>
                     {entries.map(([t,n]) => (
                       <div key={t} style={{
@@ -301,7 +301,7 @@ export default function ReportsView() {
         </div>
       )}
 
-      {/* ── ALERTS TABLE TAB ── */}
+      {/* -- ALERTS TABLE TAB -- */}
       {activeTab==="alerts" && (
         <div style={{ background:"#111318", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"12px", overflow:"hidden" }}>
           <div style={{
@@ -332,7 +332,7 @@ export default function ReportsView() {
                       <span style={{ fontSize:"11px", color:"#a8b3cc", fontFamily:"var(--font-mono)" }}>{a.source_ip||"-"}</span>
                       <span style={{ fontSize:"11px", color:"#a8b3cc", fontFamily:"var(--font-mono)" }}>{a.dest_ip||"-"}</span>
                       <span style={{ fontSize:"11px", color:"#a8b3cc", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                        {[a.event_type,a.mitre_tactic].filter(Boolean).join(" · ")||"-"}
+                        {[a.event_type,a.mitre_tactic].filter(Boolean).join(" � ")||"-"}
                       </span>
                       <span style={{ fontSize:"11px", color:"#818cf8", fontFamily:"var(--font-mono)" }}>
                         {a.confidence!=null ? a.confidence+"%" : "-"}
@@ -351,12 +351,12 @@ export default function ReportsView() {
               padding:"6px 14px", borderRadius:"6px", cursor:"pointer",
               background:"rgba(34,211,238,0.08)", border:"1px solid rgba(34,211,238,0.25)",
               color:"#22d3ee", fontSize:"11px", fontWeight:600, fontFamily:"var(--font-mono)",
-            }}>↓ CSV</button>
+            }}>? CSV</button>
           </div>
         </div>
       )}
 
-      {/* ── AI REPORT TAB ── */}
+      {/* -- AI REPORT TAB -- */}
       {activeTab==="ai report" && (
         <div style={{
           background:"#111318", border:"1px solid rgba(129,140,248,0.2)",
@@ -365,7 +365,7 @@ export default function ReportsView() {
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"10px" }}>
             <div>
               <div style={{ fontSize:"14px", fontWeight:700, color:"#f0f2f7" }}>AI-Generated Incident Report</div>
-              <div style={{ fontSize:"11px", color:"#5a6480", marginTop:"3px" }}>Powered by SentinelOps · Gemini AI Engine</div>
+              <div style={{ fontSize:"11px", color:"#5a6480", marginTop:"3px" }}>Powered by SentinelOps � Gemini AI Engine</div>
             </div>
             <button onClick={runAI} disabled={aiLoading} style={{
               padding:"9px 20px", borderRadius:"8px",
@@ -375,7 +375,7 @@ export default function ReportsView() {
               color: aiLoading ? "#3d4660" : "#818cf8",
               fontSize:"12px", fontWeight:600, fontFamily:"var(--font-mono)", letterSpacing:"0.06em",
             }}>
-              {aiLoading ? "GENERATING..." : "↺ REGENERATE"}
+              {aiLoading ? "GENERATING..." : "? REGENERATE"}
             </button>
           </div>
 
@@ -389,7 +389,7 @@ export default function ReportsView() {
                 <circle cx="9" cy="9" r="7" stroke="#818cf8" strokeWidth="1.5" strokeDasharray="22 20" strokeLinecap="round"/>
               </svg>
               <span style={{ fontSize:"13px", color:"#818cf8", fontFamily:"var(--font-mono)", letterSpacing:"0.08em" }}>
-                GEMINI AI PROCESSING · ANALYZING {total} ALERTS...
+                GEMINI AI PROCESSING � ANALYZING {total} ALERTS...
               </span>
             </div>
           )}
@@ -409,9 +409,9 @@ export default function ReportsView() {
               padding:"48px", textAlign:"center", borderRadius:"10px",
               background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.06)",
             }}>
-              <div style={{ fontSize:"32px", marginBottom:"12px" }}>🤖</div>
+              <div style={{ fontSize:"32px", marginBottom:"12px" }}></div>
               <div style={{ fontSize:"14px", fontWeight:600, color:"#a8b3cc", marginBottom:"6px" }}>No report generated yet</div>
-              <div style={{ fontSize:"12px", color:"#3d4660" }}>Click "✦ AI Report" in the header bar above</div>
+              <div style={{ fontSize:"12px", color:"#3d4660" }}>Click "? AI Report" in the header bar above</div>
             </div>
           )}
         </div>
@@ -420,3 +420,7 @@ export default function ReportsView() {
     </div>
   );
 }
+
+
+
+

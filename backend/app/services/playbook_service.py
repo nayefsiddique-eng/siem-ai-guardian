@@ -124,18 +124,18 @@ def _fallback_playbook(alert) -> dict:
     }
 
 
-def approve_playbook(playbook: dict, approved_by: str) -> dict:
-    """Mark playbook as approved and ready to execute."""
+def approve_playbook(playbook, approved_by):
     playbook["status"] = "approved"
     playbook["approved_by"] = approved_by
-    playbook["approved_at"] = datetime.now(timezone.utc).isoformat()
     return playbook
 
 
-def reject_playbook(playbook: dict, rejected_by: str, reason: str) -> dict:
-    """Mark playbook as rejected."""
+def reject_playbook(playbook, rejected_by, reason):
     playbook["status"] = "rejected"
     playbook["rejected_by"] = rejected_by
-    playbook["rejected_at"] = datetime.now(timezone.utc).isoformat()
     playbook["rejection_reason"] = reason
     return playbook
+
+
+
+

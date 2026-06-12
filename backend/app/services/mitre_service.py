@@ -1,4 +1,4 @@
-MITRE_MAP = {
+﻿MITRE_MAP = {
     "brute_force":          {"id":"T1110","name":"Brute Force","tactic":"Credential Access","url":"https://attack.mitre.org/techniques/T1110"},
     "port_scan":            {"id":"T1046","name":"Network Service Discovery","tactic":"Discovery","url":"https://attack.mitre.org/techniques/T1046"},
     "privilege_escalation": {"id":"T1068","name":"Exploitation for Privilege Escalation","tactic":"Privilege Escalation","url":"https://attack.mitre.org/techniques/T1068"},
@@ -24,3 +24,6 @@ def enrich_alert(alert_type: str, alert_dict: dict) -> dict:
     alert_dict["mitre_tactic"]         = m["tactic"]
     alert_dict["mitre_url"]            = m["url"]
     return alert_dict
+
+
+

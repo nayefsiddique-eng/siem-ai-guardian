@@ -1,4 +1,4 @@
-"""
+﻿"""
 AI analysis service facade backed by Gemini.
 """
 
@@ -26,3 +26,6 @@ class AIAnalysisService:
 
 
 ai_analysis_service = AIAnalysisService()
+
+
+

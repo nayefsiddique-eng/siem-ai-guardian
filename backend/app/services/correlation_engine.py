@@ -1,4 +1,4 @@
-"""
+﻿"""
 Correlation Engine
 Detects multi-step attack patterns across multiple log events.
 """
@@ -91,3 +91,6 @@ async def _scan_then_exploit(log: LogEntry, db: AsyncSession):
         logger.warning(f"[CORRELATION] Scan+Exploit from {log.source_ip}")
         return alert
     return None
+
+
+

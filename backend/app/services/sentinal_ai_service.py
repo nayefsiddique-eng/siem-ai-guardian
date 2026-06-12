@@ -1,4 +1,4 @@
-from sqlalchemy import select
+﻿from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.alert import Alert
@@ -51,3 +51,5 @@ Related Logs:
         "logs": related_logs,
         "analysis": response,
     }
+
+

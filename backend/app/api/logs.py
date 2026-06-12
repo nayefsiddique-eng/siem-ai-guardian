@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+﻿from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from pydantic import BaseModel, Field
@@ -145,3 +145,6 @@ async def get_cold_logs(date: str = Query(default=None, example="2026-06-09")):
 @router.get("/cold/stats", summary="Cold storage statistics")
 async def cold_storage_stats():
     return get_cold_storage_stats()
+
+
+

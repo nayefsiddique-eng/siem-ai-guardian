@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+﻿from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -57,3 +57,6 @@ require_admin_or_above = require_roles(
     UserRole.admin, UserRole.super_admin
 )
 require_super_admin = require_roles(UserRole.super_admin)
+
+
+

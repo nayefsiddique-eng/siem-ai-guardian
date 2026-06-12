@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Enum
+﻿from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Enum
 from sqlalchemy.sql import func
 import enum
 from app.core.database import Base
@@ -33,3 +33,6 @@ class User(Base):
             "is_active": self.is_active,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
+
+
+

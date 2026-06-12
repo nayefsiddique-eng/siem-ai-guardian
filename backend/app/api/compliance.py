@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+ï»¿from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from app.core.database import get_db
@@ -318,7 +318,7 @@ async def export_compliance_pdf(db: AsyncSession = Depends(get_db)):
     ]))
     story += [t, Spacer(1, 8*mm)]
 
-    # Framework Analysis — bigger text, KeepTogether per framework
+    # Framework Analysis â€” bigger text, KeepTogether per framework
     story.append(S("Framework Analysis", "Helvetica-Bold", 13, C_TEXT, sb=2, sa=4))
     story.append(HR())
     for fw_id, fw in data["frameworks"].items():
@@ -342,7 +342,7 @@ async def export_compliance_pdf(db: AsyncSession = Depends(get_db)):
         block += [Spacer(1, 3*mm), HR(C_BORDER, 0.4, sb=0, sa=5)]
         story.append(KeepTogether(block))
 
-    # Attack Mapping — use KeepTogether to prevent split
+    # Attack Mapping â€” use KeepTogether to prevent split
     atk_rows = [["Attack Type", "MITRE", "Severity", "Count", "Frameworks"]]
     ps_wrap = ParagraphStyle("w", fontName="Helvetica", fontSize=9, leading=12, textColor=colors.HexColor("#1e293b"))
     for atype, info in data["attack_mapping"].items():
@@ -401,3 +401,6 @@ async def export_compliance_pdf(db: AsyncSession = Depends(get_db)):
     fname = f"sentinelops_compliance_{_dt.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
     return _SR(buf, media_type="application/pdf",
                headers={"Content-Disposition": f"attachment; filename={fname}"})
+
+
+

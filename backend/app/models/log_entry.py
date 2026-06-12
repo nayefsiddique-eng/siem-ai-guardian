@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Float, JSON, Index
+﻿from sqlalchemy import Column, Integer, String, DateTime, Float, JSON, Index
 from sqlalchemy.sql import func
 from app.core.database import Base
 
@@ -43,3 +43,6 @@ class LogEntry(Base):
             "extra_fields": self.extra_fields,
             "risk_score": self.risk_score,
         }
+
+
+

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+﻿from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
 from datetime import datetime, timedelta, timezone
@@ -92,3 +92,6 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
         ],
         "recent_alerts": recent_alerts,
     }
+
+
+
