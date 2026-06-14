@@ -218,7 +218,7 @@ function ControlsTab({ data }) {
                   const st = row.frameworks[fw];
                   if (!st) return (
                     <td key={fw} style={{ padding: "11px 16px", textAlign: "center" }}>
-                      <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>�</span>
+                      <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>—</span>
                     </td>
                   );
                   return (
@@ -229,14 +229,14 @@ function ControlsTab({ data }) {
                           width: "20px", height: "20px", borderRadius: "50%",
                           background: "rgba(248,113,113,0.12)", border: "1px solid rgba(248,113,113,0.3)",
                           color: "#f87171", fontSize: "11px", fontWeight: 700,
-                        }}></span>
+                        }}>✕</span>
                       ) : (
                         <span style={{
                           display: "inline-flex", alignItems: "center", justifyContent: "center",
                           width: "20px", height: "20px", borderRadius: "50%",
                           background: "rgba(52,211,153,0.10)", border: "1px solid rgba(52,211,153,0.25)",
                           color: "#34d399", fontSize: "11px", fontWeight: 700,
-                        }}></span>
+                        }}>✓</span>
                       )}
                     </td>
                   );

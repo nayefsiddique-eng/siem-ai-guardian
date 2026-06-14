@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from pydantic import BaseModel, Field
@@ -123,16 +123,6 @@ async def list_logs(
     return {"logs": [log.to_dict() for log in logs], "count": len(logs)}
 
 
-@router.get("/{log_id}", summary="Get a single log entry")
-async def get_log(log_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(LogEntry).where(LogEntry.id == log_id))
-    log = result.scalar_one_or_none()
-    if not log:
-        raise HTTPException(status_code=404, detail="Log not found.")
-    return log.to_dict()
-
-
-
 @router.get("/cold", summary="Query cold storage logs by date")
 async def get_cold_logs(date: str = Query(default=None, example="2026-06-09")):
     from datetime import datetime, timezone
@@ -145,6 +135,15 @@ async def get_cold_logs(date: str = Query(default=None, example="2026-06-09")):
 @router.get("/cold/stats", summary="Cold storage statistics")
 async def cold_storage_stats():
     return get_cold_storage_stats()
+
+
+@router.get("/{log_id}", summary="Get a single log entry")
+async def get_log(log_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(LogEntry).where(LogEntry.id == log_id))
+    log = result.scalar_one_or_none()
+    if not log:
+        raise HTTPException(status_code=404, detail="Log not found.")
+    return log.to_dict()
 
 
 
