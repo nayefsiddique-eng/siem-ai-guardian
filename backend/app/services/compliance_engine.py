@@ -1,4 +1,4 @@
-﻿"""
+"""
 Compliance Mapping Engine
 Maps security alerts to regulatory framework controls automatically.
 Frameworks: SOC 2, ISO 27001, GDPR, NIST CSF

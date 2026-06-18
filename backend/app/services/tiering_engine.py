@@ -1,4 +1,4 @@
-﻿"""
+"""
 Log Tiering Engine
 Scores incoming logs and routes them to hot or cold storage.
 Hot  = SQLite DB (fast queries, recent/critical data)

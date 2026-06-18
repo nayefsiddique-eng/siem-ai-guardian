@@ -8,7 +8,8 @@ import ComplianceView from "./components/compliance/ComplianceView";
 import ReportsView from "./components/reports/ReportsView";
 import PlaybookView from "./components/playbook/PlaybookView";
 import { SiemProvider } from "./hooks/useSiem";
-import SentinalAIView from "./components/SentinalAI/SentinalAIView";
+import SentinelOpsView from "./components/SentinalAI/SentinalAIView";
+
 export default function App() {
  const [view, setView] = useState("overview");
 
@@ -17,7 +18,7 @@ const views = {
   alerts: <AlertsView />,
   logs: <LogsView />,
   analysis: <AnalysisView />,
-  sentinalai: <SentinalAIView />,
+  SentinelOps: <SentinelOpsView />,
   playbook: <PlaybookView />,
   reports: <ReportsView />,
   compliance: <ComplianceView />,
@@ -33,6 +34,12 @@ const views = {
     </SiemProvider>
   );
 }
+
+
+
+
+
+
 
 
 

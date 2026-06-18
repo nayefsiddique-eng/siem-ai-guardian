@@ -1,4 +1,4 @@
-﻿import json
+import json
 import logging
 import httpx
 
@@ -23,7 +23,7 @@ class GeminiAnalysisService:
     async def analyze_freeform(self, context: str) -> dict:
 
         prompt = f"""
-You are Sentinal AI, a Tier-3 SOC analyst.
+You are Sentinal-Ops, a Tier-3 SOC analyst.
 
 Analyze:
 

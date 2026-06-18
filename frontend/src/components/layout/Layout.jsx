@@ -6,7 +6,7 @@ const PAGE_TITLES = {
   alerts: "Alerts",
   logs: "Log Stream",
   analysis: "AI Analysis",
-  sentinalai: "Sentinal AI",
+  SentinelOps: "Sentinal-Ops",
   playbook: "Playbooks",
   reports: "Reports",
   compliance: "Compliance",
@@ -17,7 +17,7 @@ const PAGE_META = {
   alerts: "Active incidents & triage",
   logs: "Real-time event stream",
   analysis: "AI-powered threat investigation",
-  sentinalai: "AI SOC assistant",
+  SentinelOps: "AI SOC assistant",
   playbook: "Response automation",
   reports: "Executive reporting",
   compliance: "Framework monitoring",
@@ -120,6 +120,11 @@ export default function Layout({ active, onNavigate, children }) {
     </div>
   );
 }
+
+
+
+
+
 
 
 

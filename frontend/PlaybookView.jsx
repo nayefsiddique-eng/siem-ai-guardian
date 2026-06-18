@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
 export default function PlaybookView() {
@@ -260,3 +260,7 @@ export default function PlaybookView() {
     </div>
   );
 }
+
+
+
+

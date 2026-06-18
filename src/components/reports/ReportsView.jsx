@@ -57,7 +57,7 @@ async function downloadPDF() {
   const res = await fetch(BASE+"/api/reports/pdf", {
     headers: { Authorization: "Bearer "+token },
   });
-  if (!res.ok) { alert("PDF generation failed — check backend is running."); return; }
+  if (!res.ok) { alert("PDF generation failed  -  check backend is running."); return; }
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   Object.assign(document.createElement("a"),{href:url,download:"sentinelops-report-"+Date.now()+".pdf"}).click();
@@ -167,7 +167,7 @@ export default function ReportsView() {
         <div>
           <div style={{ fontSize:"15px", fontWeight:700, color:"#f0f2f7" }}>Threat Intelligence Report</div>
           <div style={{ fontSize:"12px", color:"#5a6480", marginTop:"3px" }}>
-            {new Date().toUTCString()} · {total} alerts loaded
+            {new Date().toUTCString()}  -  {total} alerts loaded
           </div>
         </div>
         <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
@@ -260,7 +260,7 @@ export default function ReportsView() {
               const counts = alerts.reduce((acc,a) => { if(a.mitre_tactic) acc[a.mitre_tactic]=(acc[a.mitre_tactic]||0)+1; return acc; },{});
               const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
               return entries.length===0
-                ? <div style={{ fontSize:"13px", color:"#3d4660", fontStyle:"italic" }}>No tactic data yet — inject logs to populate.</div>
+                ? <div style={{ fontSize:"13px", color:"#3d4660", fontStyle:"italic" }}>No tactic data yet  -  inject logs to populate.</div>
                 : <div style={{ display:"flex", flexWrap:"wrap", gap:"8px" }}>
                     {entries.map(([t,n]) => (
                       <div key={t} style={{
@@ -332,7 +332,7 @@ export default function ReportsView() {
                       <span style={{ fontSize:"11px", color:"#a8b3cc", fontFamily:"var(--font-mono)" }}>{a.source_ip||"-"}</span>
                       <span style={{ fontSize:"11px", color:"#a8b3cc", fontFamily:"var(--font-mono)" }}>{a.dest_ip||"-"}</span>
                       <span style={{ fontSize:"11px", color:"#a8b3cc", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                        {[a.event_type,a.mitre_tactic].filter(Boolean).join(" · ")||"-"}
+                        {[a.event_type,a.mitre_tactic].filter(Boolean).join("  -  ")||"-"}
                       </span>
                       <span style={{ fontSize:"11px", color:"#818cf8", fontFamily:"var(--font-mono)" }}>
                         {a.confidence!=null ? a.confidence+"%" : "-"}
@@ -365,7 +365,7 @@ export default function ReportsView() {
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"10px" }}>
             <div>
               <div style={{ fontSize:"14px", fontWeight:700, color:"#f0f2f7" }}>AI-Generated Incident Report</div>
-              <div style={{ fontSize:"11px", color:"#5a6480", marginTop:"3px" }}>Powered by SentinelOps · Gemini AI Engine</div>
+              <div style={{ fontSize:"11px", color:"#5a6480", marginTop:"3px" }}>Powered by SentinelOps  -  Gemini AI Engine</div>
             </div>
             <button onClick={runAI} disabled={aiLoading} style={{
               padding:"9px 20px", borderRadius:"8px",
@@ -389,7 +389,7 @@ export default function ReportsView() {
                 <circle cx="9" cy="9" r="7" stroke="#818cf8" strokeWidth="1.5" strokeDasharray="22 20" strokeLinecap="round"/>
               </svg>
               <span style={{ fontSize:"13px", color:"#818cf8", fontFamily:"var(--font-mono)", letterSpacing:"0.08em" }}>
-                GEMINI AI PROCESSING · ANALYZING {total} ALERTS...
+                GEMINI AI PROCESSING  -  ANALYZING {total} ALERTS...
               </span>
             </div>
           )}

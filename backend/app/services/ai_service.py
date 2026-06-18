@@ -1,4 +1,4 @@
-﻿"""
+"""
 AI analysis service facade backed by Gemini.
 """
 

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Detection Engine â€” Rule-based threat detection.
 Each rule checks a pattern in the incoming log and may trigger an Alert.
 """

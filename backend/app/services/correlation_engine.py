@@ -1,4 +1,4 @@
-﻿"""
+"""
 Correlation Engine
 Detects multi-step attack patterns across multiple log events.
 """

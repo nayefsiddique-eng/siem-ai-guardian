@@ -26,8 +26,8 @@ const NAV = [
         icon: <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.6"/><path d="M7 11c0-1.7 1.3-3 3-3s3 1.3 3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="10" cy="13.5" r="1" fill="currentColor"/></svg>,
       },
 {
-  id: "sentinalai",
-  label: "Sentinal AI",
+  id: "SentinelOps",
+  label: "Sentinal-Ops",
   sub: "AI SOC assistant",
   icon: (
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
@@ -126,7 +126,7 @@ export default function Sidebar({ active, onNavigate, mobileOpen, onClose }) {
                 letterSpacing: "-0.01em", lineHeight: 1.2,
                 color: "#f0f2f7",
               }}>
-                Sentinel<span style={{ color: "#818cf8" }}>AI</span>
+                Sentinel<span style={{ color: "#818cf8" }}>-Ops</span>
               </div>
               <div style={{
                 fontSize: "10px", color: "#5a6480", marginTop: "2px",
@@ -190,7 +190,7 @@ export default function Sidebar({ active, onNavigate, mobileOpen, onClose }) {
                     <button
                       key={item.id}
                       className="nav-btn"
-                      onClick={() => { onNavigate(item.id); onClose?.(); }}
+                      onClick={() => { onNavigate(item.id); if (onClose) { onClose(); }; }}
                       style={{
                         display: "flex", alignItems: "center", gap: "11px",
                         padding: "10px 10px", borderRadius: "9px",
@@ -294,13 +294,18 @@ export default function Sidebar({ active, onNavigate, mobileOpen, onClose }) {
             fontSize: "11px", color: "#3d4660",
             fontFamily: "var(--font-mono)",
           }}>
-            SentinelAI 2026
+            SentinelOps 2026
           </div>
         </div>
       </aside>
     </>
   );
 }
+
+
+
+
+
 
 
 

@@ -169,10 +169,10 @@ export default function DashboardHome() {
   const recentAlerts = (alerts || []).slice(0, 8);
 
   const sevCounts = {
-    critical: s.critical_alerts  0,
-    high:     s.high_alerts      0,
-    medium:   s.medium_alerts    0,
-    low:      s.low_alerts       0,
+    critical: s.critical_alerts ?? 0,
+    high:     s.high_alerts     ?? 0,
+    medium:   s.medium_alerts   ?? 0,
+    low:      s.low_alerts      ?? 0,
   };
   const maxSev = Math.max(...Object.values(sevCounts), 1);
 
@@ -191,28 +191,28 @@ export default function DashboardHome() {
       }}>
         <StatCard
           label="Total Alerts"
-          value={s.total_alerts  0}
+          value={s.total_alerts ?? 0}
           sub="all time"
           accent="var(--accent-indigo)"
           glow="0 0 12px rgba(99,102,241,0.5)"
         />
         <StatCard
           label="Open Alerts"
-          value={s.open_alerts  0}
+          value={s.open_alerts ?? 0}
           sub="pending triage"
           accent="var(--severity-high)"
           glow="0 0 12px rgba(251,146,60,0.5)"
         />
         <StatCard
           label="Logs Ingested"
-          value={s.total_logs  0}
+          value={s.total_logs ?? 0}
           sub="indexed events"
           accent="var(--accent-cyan)"
           glow="0 0 12px rgba(34,211,238,0.4)"
         />
         <StatCard
           label="Critical"
-          value={s.critical_alerts  0}
+          value={s.critical_alerts ?? 0}
           sub="immediate action"
           accent="var(--severity-critical)"
           glow="0 0 12px rgba(244,63,94,0.5)"
@@ -392,6 +392,11 @@ export default function DashboardHome() {
     </div>
   );
 }
+
+
+
+
+
 
 
 

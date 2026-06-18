@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
-export default function SentinalAIView() {
+export default function SentinelOpsView() {
   const { freeformQuery } = useSiem();
 
   const [query, setQuery] = useState("");
@@ -50,7 +50,7 @@ export default function SentinalAIView() {
             color: "var(--text-primary)",
           }}
         >
-          Sentinal AI
+          Sentinal-Ops
         </div>
 
         <div
@@ -199,6 +199,11 @@ export default function SentinalAIView() {
     </div>
   );
 }
+
+
+
+
+
 
 
 
