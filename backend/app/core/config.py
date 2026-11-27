@@ -1,6 +1,6 @@
 from secrets import token_urlsafe
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, PositiveInt, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./siem.db"
 
     JWT_SECRET_KEY: SecretStr | None = None
+    TELEMETRY_TENANT_ID: PositiveInt | None = None
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=480, gt=0)
 
     ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]

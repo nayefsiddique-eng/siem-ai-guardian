@@ -8,6 +8,7 @@ def app_client(tmp_path_factory):
     with pytest.MonkeyPatch.context() as env:
         db = tmp_path_factory.mktemp("siem") / "test.db"
         env.setenv("DEBUG", "false")
+        env.setenv("TELEMETRY_TENANT_ID", "1")
         env.setenv("DATABASE_URL", f"sqlite+aiosqlite:///{db}")
         env.setenv("JWT_SECRET_KEY", "local-test-signing-key-for-synthetic-data")
         env.setenv("GEMINI_API_KEY", "")
@@ -38,10 +39,19 @@ def test_account_login_and_log_ingestion(app_client):
     )
     assert user.json()["email"] == account["email"]
 
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+    outsider = dict(account, email="outsider@example.invalid", tenant_slug="other-soc")
+    other = app_client.post("/api/auth/register", json=outsider)
+    assert other.status_code == 200
+    outsider_headers = {"Authorization": f"Bearer {other.json()['access_token']}"}
+    assert app_client.get("/api/logs/").status_code == 401
+    assert app_client.get("/api/logs/", headers=outsider_headers).status_code == 403
+    assert app_client.get("/api/reports/", headers=outsider_headers).status_code == 403
+
     event = {"source_ip": "192.0.2.1", "event_type": "test_event"}
-    ingested = app_client.post("/api/logs/ingest", json=event)
+    ingested = app_client.post("/api/logs/ingest", json=event, headers=headers)
     assert ingested.status_code == 200
-    assert app_client.get(f"/api/logs/{ingested.json()['log_id']}").json()["source_ip"] == event["source_ip"]
+    assert app_client.get(f"/api/logs/{ingested.json()['log_id']}", headers=headers).json()["source_ip"] == event["source_ip"]
 
 
 def test_cors_patch_preflight(app_client):
@@ -52,14 +62,29 @@ def test_cors_patch_preflight(app_client):
     assert response.headers["access-control-allow-origin"] == origin
 
 
+@pytest.fixture
+def owner_headers(app_client):
+    login = app_client.post("/api/auth/login", json={
+        "email": "analyst@example.invalid", "password": "local-test-password",
+    })
+    if login.status_code == 401:
+        response = app_client.post("/api/auth/register", json={
+            "email": "analyst@example.invalid", "password": "local-test-password",
+            "full_name": "Test Analyst", "tenant_name": "Test SOC", "tenant_slug": "test-soc",
+        })
+        assert response.status_code == 200
+        login = response
+    return {"Authorization": f"Bearer {login.json()['access_token']}"}
+
+
 @pytest.mark.parametrize("query", ["limit=-1", "offset=-1", "limit=501"])
-def test_log_pagination_bounds(app_client, query):
-    assert app_client.get(f"/api/logs/?{query}").status_code == 422
+def test_log_pagination_bounds(app_client, owner_headers, query):
+    assert app_client.get(f"/api/logs/?{query}", headers=owner_headers).status_code == 422
 
 
-def test_cold_storage_calendar_validation(app_client):
-    assert app_client.get("/api/logs/cold?date=2026-02-30").status_code == 422
-    response = app_client.get("/api/logs/cold?date=2026-02-28")
+def test_cold_storage_calendar_validation(app_client, owner_headers):
+    assert app_client.get("/api/logs/cold?date=2026-02-30", headers=owner_headers).status_code == 422
+    response = app_client.get("/api/logs/cold?date=2026-02-28", headers=owner_headers)
     assert response.json() == {"date": "2026-02-28", "logs": [], "count": 0}
 
 

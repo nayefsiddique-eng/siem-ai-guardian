@@ -90,9 +90,13 @@ expire on restart. Generate a stable secret with
 `JWT_SECRET_KEY` privately when running multiple workers or with `DEBUG=false`.
 Rotating the key invalidates existing sessions.
 
-Account endpoints use bearer tokens. Several telemetry and investigation
-routes still use shared data without tenant-level access controls. Keep this
-demonstration on localhost with synthetic data.
+The existing telemetry store is shared within one deployment. Provision a
+tenant while the server is bound to localhost, then set `TELEMETRY_TENANT_ID`
+to that existing tenant ID and set `DEBUG=false` before accepting traffic.
+Telemetry routes require a bearer token for a member of that active tenant.
+Ingestion clients also need a token. Running with `DEBUG=true` and leaving the
+tenant unset enables the original local demo mode. Use separate databases and
+deployments for separate telemetry tenants.
 
 ### 2. Frontend Setup
 
