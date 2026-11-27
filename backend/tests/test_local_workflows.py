@@ -93,3 +93,54 @@ def test_non_debug_server_requires_signing_key(app_client):
 
     with pytest.raises(ValidationError, match="JWT_SECRET_KEY"):
         Settings(DEBUG=False, JWT_SECRET_KEY=None)
+
+
+def test_correlation_in_both_ingestion_modes_and_soc_workflow(app_client, owner_headers):
+    first_source = "192.0.2.51"
+    second_source = "192.0.2.52"
+    attack_log = {"event_type": " FAILED_LOGIN ", "log_source": " SYSLOG ", "hostname": "demo"}
+    for _ in range(5):
+        response = app_client.post("/api/logs/ingest", headers=owner_headers,
+                                   json=dict(attack_log, source_ip=first_source))
+        assert response.status_code == 200
+    assert response.json()["alert_generated"]
+
+    correlation = {"event_type": "successful_login", "source_ip": first_source}
+    response = app_client.post("/api/logs/ingest", json=correlation, headers=owner_headers)
+    assert response.status_code == 200 and response.json()["alert_generated"]
+    generated_ids = response.json()["alert_ids"]
+
+    second_logs = [dict(attack_log, source_ip=second_source)] * 3 + [
+        dict(correlation, source_ip=second_source),
+    ]
+    bulk = app_client.post("/api/logs/ingest/bulk", json={"logs": second_logs}, headers=owner_headers)
+    assert bulk.status_code == 200 and bulk.json()["alerts_generated"] >= 1
+
+    logs = app_client.get("/api/logs/", params={"event_type": "FAILED_LOGIN", "source_ip": first_source},
+                          headers=owner_headers).json()
+    assert logs["count"] == 5 and all(row["log_source"] == "syslog" for row in logs["logs"])
+    alerts = app_client.get("/api/alerts/", params={"alert_type": "brute_force_success"}, headers=owner_headers).json()
+    assert alerts["count"] == 2
+
+    alert_id = next(row["id"] for row in alerts["alerts"] if row["source_ip"] == first_source)
+    assert alert_id in generated_ids
+    alert = app_client.get(f"/api/alerts/{alert_id}", headers=owner_headers).json()
+    assert alert["mitre_technique_id"] == "T1110"
+    assert app_client.get("/api/dashboard/stats", headers=owner_headers).status_code == 200
+    assert app_client.patch(f"/api/alerts/{alert_id}", json={"status": "investigating"},
+                            headers=owner_headers).status_code == 200
+    assert app_client.post(f"/api/playbooks/{alert_id}/generate", headers=owner_headers).status_code == 200
+    assert app_client.post(f"/api/playbooks/{alert_id}/approve", headers=owner_headers).status_code == 200
+    assert app_client.post(f"/api/playbooks/{alert_id}/reject", headers=owner_headers,
+                           json={"reason": "Already reviewed"}).status_code == 400
+    pdf = app_client.get("/api/reports/pdf", headers=owner_headers)
+    assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF-")
+
+
+def test_expired_token_is_denied(app_client):
+    from datetime import timedelta
+    from app.services.auth_service import create_access_token
+
+    token = create_access_token({"sub": "1"}, expires_delta=timedelta(seconds=-1))
+    response = app_client.get("/api/logs/", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 401

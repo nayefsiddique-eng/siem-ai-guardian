@@ -4,6 +4,7 @@ from sqlalchemy import select
 from pydantic import BaseModel
 
 from app.core.database import get_db
+from app.core.dependencies import require_telemetry_analyst
 from app.models.alert import Alert
 from app.services.playbook_service import (
     generate_playbook,
@@ -21,7 +22,7 @@ class RejectRequest(BaseModel):
     reason: str
 
 
-@router.post("/{alert_id}/generate", summary="Generate AI playbook for an alert")
+@router.post("/{alert_id}/generate", summary="Generate AI playbook for an alert", dependencies=[Depends(require_telemetry_analyst)])
 async def generate(
     alert_id: int,
     db: AsyncSession = Depends(get_db),
@@ -59,7 +60,7 @@ async def get_playbook(alert_id: int):
     return playbook
 
 
-@router.post("/{alert_id}/approve", summary="Approve playbook")
+@router.post("/{alert_id}/approve", summary="Approve playbook", dependencies=[Depends(require_telemetry_analyst)])
 async def approve(alert_id: int):
 
     playbook = _playbooks.get(alert_id)
@@ -89,7 +90,7 @@ async def approve(alert_id: int):
     }
 
 
-@router.post("/{alert_id}/reject", summary="Reject playbook")
+@router.post("/{alert_id}/reject", summary="Reject playbook", dependencies=[Depends(require_telemetry_analyst)])
 async def reject(
     alert_id: int,
     payload: RejectRequest,
@@ -102,6 +103,9 @@ async def reject(
             status_code=404,
             detail="No playbook found."
         )
+
+    if playbook["status"] != "pending_approval":
+        raise HTTPException(status_code=400, detail=f"Playbook already {playbook['status']}.")
 
     updated = reject_playbook(
         playbook,

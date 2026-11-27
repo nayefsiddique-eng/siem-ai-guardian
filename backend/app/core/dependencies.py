@@ -45,7 +45,7 @@ async def get_current_user(
 async def require_telemetry_access(
     credentials: HTTPAuthorizationCredentials | None = Depends(HTTPBearer(auto_error=False)),
     db: AsyncSession = Depends(get_db),
-) -> None:
+) -> User | None:
     """Keep the existing shared telemetry store within one configured tenant."""
     if settings.DEBUG and settings.TELEMETRY_TENANT_ID is None:
         return
@@ -58,6 +58,15 @@ async def require_telemetry_access(
     tenant = await db.get(Tenant, user.tenant_id)
     if tenant is None or not tenant.is_active:
         raise HTTPException(status_code=403, detail="Telemetry tenant is inactive.")
+
+    return user
+
+
+async def require_telemetry_analyst(
+    user: User | None = Depends(require_telemetry_access),
+) -> None:
+    if user is not None and user.role not in (UserRole.analyst, UserRole.admin, UserRole.super_admin):
+        raise HTTPException(status_code=403, detail="Telemetry analyst access required.")
 
 def require_roles(*roles: UserRole):
     """Factory that returns a dependency checking the user has one of the given roles."""

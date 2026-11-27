@@ -168,3 +168,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 From `backend/`, run `python -m pip install -r requirements-dev.txt` and
 `python -m pytest -q`. The test suite uses disposable SQLite storage and
 synthetic events.
+
+The disposable SOC regression exercises normalized JSON telemetry, rule and
+correlation alerts, ATT&CK mapping, investigation updates, playbook approval,
+and PDF export. Playbooks record decisions in memory. The approval route does
+not execute the suggested commands. Analyst and administrator roles can
+change alert and playbook state in configured-tenant mode.
