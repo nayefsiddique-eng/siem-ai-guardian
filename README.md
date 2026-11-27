@@ -76,12 +76,23 @@ pip install -r requirements.txt
 
 # Configure environment variables
 cp .env.example .env
-# Edit .env and set GEMINI_API_KEY=your_api_key
+# Optionally set GEMINI_API_KEY for AI analysis.
 
 # Run FastAPI backend server
-uvicorn app.main:app --reload --port 8000
+uvicorn main:app --reload --port 8000
 ```
 *API interactive documentation available at `http://localhost:8000/docs`.*
+
+The sample configuration runs a local SQLite database. With `DEBUG=true` and no
+configured JWT key, each process generates its own key and issued sessions
+expire on restart. Generate a stable secret with
+`python -c "import secrets; print(secrets.token_urlsafe(48))"` and set
+`JWT_SECRET_KEY` privately when running multiple workers or with `DEBUG=false`.
+Rotating the key invalidates existing sessions.
+
+Account endpoints use bearer tokens. Several telemetry and investigation
+routes still use shared data without tenant-level access controls. Keep this
+demonstration on localhost with synthetic data.
 
 ### 2. Frontend Setup
 
@@ -147,3 +158,9 @@ siem-ai-guardian/
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### Backend regression tests
+
+From `backend/`, run `python -m pip install -r requirements-dev.txt` and
+`python -m pytest -q`. The test suite uses disposable SQLite storage and
+synthetic events.

@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from pydantic import BaseModel, Field
 from typing import Optional, List
-from datetime import datetime
+from datetime import date as calendar_date, datetime, timezone
 
 from app.core.database import get_db
 from app.models.log_entry import LogEntry
@@ -97,8 +97,8 @@ async def ingest_bulk(payload: BulkIngestRequest, db: AsyncSession = Depends(get
 
 @router.get("/", summary="List log entries with filters")
 async def list_logs(
-    limit: int = Query(default=100, le=500),
-    offset: int = Query(default=0),
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
     source_ip: Optional[str] = None,
     event_type: Optional[str] = None,
     severity: Optional[str] = None,
@@ -124,10 +124,14 @@ async def list_logs(
 
 
 @router.get("/cold", summary="Query cold storage logs by date")
-async def get_cold_logs(date: str = Query(default=None, example="2026-06-09")):
-    from datetime import datetime, timezone
-    if not date:
-        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+async def get_cold_logs(date: str = Query(default=None, examples=["2026-06-09"])):
+    if date is None:
+        date = datetime.now(timezone.utc).date().isoformat()
+    try:
+        if calendar_date.fromisoformat(date).isoformat() != date:
+            raise ValueError("Date must use YYYY-MM-DD")
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="Date must be a valid YYYY-MM-DD date.") from exc
     logs = read_cold_storage(date)
     return {"date": date, "logs": logs, "count": len(logs)}
 
