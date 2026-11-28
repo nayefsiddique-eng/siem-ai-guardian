@@ -6,7 +6,6 @@
 [![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/frontend-React%20%2B%20Vite-61DAFB.svg)](https://react.dev/)
 [![SQLAlchemy](https://img.shields.io/badge/ORM-Async%20SQLAlchemy-red.svg)](https://www.sqlalchemy.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **SIEM AI Guardian** is a full-stack Security Information and Event Management (SIEM) platform. It combines high-throughput log ingestion, a 5-rule MITRE ATT&CK threat detection engine, and Google Gemini AI incident analysis.
 
@@ -161,7 +160,6 @@ siem-ai-guardian/
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ### Backend regression tests
 
