@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
-from datetime import datetime
+from datetime import date as calendar_date, datetime, timezone
 
 from app.core.database import get_db
 from app.models.log_entry import LogEntry
@@ -31,6 +31,17 @@ class LogIngestRequest(BaseModel):
     raw_message: Optional[str] = None
     extra_fields: Optional[dict] = None
 
+    @field_validator("event_type", "log_source", mode="before")
+    @classmethod
+    def normalize_label(cls, value):
+        if not isinstance(value, str):
+            return value
+        normalized = value.strip().casefold()
+        if not normalized:
+            raise ValueError("Log labels must not be empty.")
+        return normalized
+
+
 class BulkIngestRequest(BaseModel):
     logs: List[LogIngestRequest]
 
@@ -45,7 +56,10 @@ async def ingest_log(payload: LogIngestRequest, db: AsyncSession = Depends(get_d
     await db.flush()  # get the ID before detection
 
     alert = await detection_engine.analyze_log(log, db)
-    await correlate(log, db)
+    correlated = await correlate(log, db)
+    generated_ids = [item.id for item in ([alert] if alert else []) + correlated]
+    if alert is None and correlated:
+        alert = correlated[0]
 
     # If alert triggered, run AI analysis asynchronously (don't block response)
     if alert:
@@ -64,6 +78,7 @@ async def ingest_log(payload: LogIngestRequest, db: AsyncSession = Depends(get_d
         "log_id": log.id,
         "alert_generated": alert is not None,
         "alert_id": alert.id if alert else None,
+        "alert_ids": generated_ids,
     }
 
 
@@ -85,6 +100,7 @@ async def ingest_bulk(payload: BulkIngestRequest, db: AsyncSession = Depends(get
         alert = await detection_engine.analyze_log(log, db)
         if alert:
             alert_count += 1
+        alert_count += len(await correlate(log, db))
 
     await db.commit()
     return {
@@ -97,8 +113,8 @@ async def ingest_bulk(payload: BulkIngestRequest, db: AsyncSession = Depends(get
 
 @router.get("/", summary="List log entries with filters")
 async def list_logs(
-    limit: int = Query(default=100, le=500),
-    offset: int = Query(default=0),
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
     source_ip: Optional[str] = None,
     event_type: Optional[str] = None,
     severity: Optional[str] = None,
@@ -110,11 +126,11 @@ async def list_logs(
     if source_ip:
         query = query.where(LogEntry.source_ip == source_ip)
     if event_type:
-        query = query.where(LogEntry.event_type == event_type)
+        query = query.where(LogEntry.event_type == event_type.strip().casefold())
     if severity:
         query = query.where(LogEntry.severity == severity)
     if log_source:
-        query = query.where(LogEntry.log_source == log_source)
+        query = query.where(LogEntry.log_source == log_source.strip().casefold())
 
     query = query.limit(limit).offset(offset)
     result = await db.execute(query)
@@ -124,10 +140,14 @@ async def list_logs(
 
 
 @router.get("/cold", summary="Query cold storage logs by date")
-async def get_cold_logs(date: str = Query(default=None, example="2026-06-09")):
-    from datetime import datetime, timezone
-    if not date:
-        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+async def get_cold_logs(date: str = Query(default=None, examples=["2026-06-09"])):
+    if date is None:
+        date = datetime.now(timezone.utc).date().isoformat()
+    try:
+        if calendar_date.fromisoformat(date).isoformat() != date:
+            raise ValueError("Date must use YYYY-MM-DD")
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="Date must be a valid YYYY-MM-DD date.") from exc
     logs = read_cold_storage(date)
     return {"date": date, "logs": logs, "count": len(logs)}
 

@@ -76,12 +76,27 @@ pip install -r requirements.txt
 
 # Configure environment variables
 cp .env.example .env
-# Edit .env and set GEMINI_API_KEY=your_api_key
+# Optionally set GEMINI_API_KEY for AI analysis.
 
 # Run FastAPI backend server
-uvicorn app.main:app --reload --port 8000
+uvicorn main:app --reload --port 8000
 ```
 *API interactive documentation available at `http://localhost:8000/docs`.*
+
+The sample configuration runs a local SQLite database. With `DEBUG=true` and no
+configured JWT key, each process generates its own key and issued sessions
+expire on restart. Generate a stable secret with
+`python -c "import secrets; print(secrets.token_urlsafe(48))"` and set
+`JWT_SECRET_KEY` privately when running multiple workers or with `DEBUG=false`.
+Rotating the key invalidates existing sessions.
+
+The existing telemetry store is shared within one deployment. Provision a
+tenant while the server is bound to localhost, then set `TELEMETRY_TENANT_ID`
+to that existing tenant ID and set `DEBUG=false` before accepting traffic.
+Telemetry routes require a bearer token for a member of that active tenant.
+Ingestion clients also need a token. Running with `DEBUG=true` and leaving the
+tenant unset enables the original local demo mode. Use separate databases and
+deployments for separate telemetry tenants.
 
 ### 2. Frontend Setup
 
@@ -147,3 +162,15 @@ siem-ai-guardian/
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### Backend regression tests
+
+From `backend/`, run `python -m pip install -r requirements-dev.txt` and
+`python -m pytest -q`. The test suite uses disposable SQLite storage and
+synthetic events.
+
+The disposable SOC regression exercises normalized JSON telemetry, rule and
+correlation alerts, ATT&CK mapping, investigation updates, playbook approval,
+and PDF export. Playbooks record decisions in memory. The approval route does
+not execute the suggested commands. Analyst and administrator roles can
+change alert and playbook state in configured-tenant mode.

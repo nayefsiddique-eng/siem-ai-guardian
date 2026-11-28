@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 from app.core.database import get_db
+from app.core.dependencies import require_telemetry_analyst
 from app.models.alert import Alert
 from app.models.log_entry import LogEntry
 from app.services.ai_service import ai_analysis_service
@@ -19,8 +20,8 @@ class AlertUpdateRequest(BaseModel):
 
 @router.get("/", summary="List alerts with filters")
 async def list_alerts(
-    limit: int = Query(default=50, le=200),
-    offset: int = Query(default=0),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
     severity: Optional[str] = None,
     status: Optional[str] = None,
     alert_type: Optional[str] = None,
@@ -51,7 +52,7 @@ async def get_alert(alert_id: int, db: AsyncSession = Depends(get_db)):
     return alert.to_dict()
 
 
-@router.patch("/{alert_id}", summary="Update alert status")
+@router.patch("/{alert_id}", summary="Update alert status", dependencies=[Depends(require_telemetry_analyst)])
 async def update_alert(
     alert_id: int,
     payload: AlertUpdateRequest,
@@ -75,7 +76,7 @@ async def update_alert(
     return {"status": "updated", "alert": alert.to_dict()}
 
 
-@router.post("/{alert_id}/analyze", summary="Trigger AI analysis for an alert")
+@router.post("/{alert_id}/analyze", summary="Trigger AI analysis for an alert", dependencies=[Depends(require_telemetry_analyst)])
 async def analyze_alert(alert_id: int, db: AsyncSession = Depends(get_db)):
     """Manually trigger AI analysis for an existing alert."""
     result = await db.execute(select(Alert).where(Alert.id == alert_id))

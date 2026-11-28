@@ -2,7 +2,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from app.core.config import settings
 from app.core.database import get_db
+from app.models.tenant import Tenant
 from app.services.auth_service import decode_token
 from app.models.user import User, UserRole
 
@@ -24,11 +26,14 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user_id = payload.get("sub")
-    if not user_id:
+    try:
+        user_id = int(payload.get("sub", ""))
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=401, detail="Invalid token payload.") from exc
+    if not 0 < user_id <= 2**63 - 1:
         raise HTTPException(status_code=401, detail="Invalid token payload.")
 
-    result = await db.execute(select(User).where(User.id == int(user_id)))
+    result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
 
     if not user or not user.is_active:
@@ -36,6 +41,32 @@ async def get_current_user(
 
     return user
 
+
+async def require_telemetry_access(
+    credentials: HTTPAuthorizationCredentials | None = Depends(HTTPBearer(auto_error=False)),
+    db: AsyncSession = Depends(get_db),
+) -> User | None:
+    """Keep the existing shared telemetry store within one configured tenant."""
+    if settings.DEBUG and settings.TELEMETRY_TENANT_ID is None:
+        return
+    if credentials is None:
+        raise HTTPException(status_code=401, detail="Bearer token required.",
+                            headers={"WWW-Authenticate": "Bearer"})
+    user = await get_current_user(credentials, db)
+    if settings.TELEMETRY_TENANT_ID is None or user.tenant_id != settings.TELEMETRY_TENANT_ID:
+        raise HTTPException(status_code=403, detail="Telemetry tenant access required.")
+    tenant = await db.get(Tenant, user.tenant_id)
+    if tenant is None or not tenant.is_active:
+        raise HTTPException(status_code=403, detail="Telemetry tenant is inactive.")
+
+    return user
+
+
+async def require_telemetry_analyst(
+    user: User | None = Depends(require_telemetry_access),
+) -> None:
+    if user is not None and user.role not in (UserRole.analyst, UserRole.admin, UserRole.super_admin):
+        raise HTTPException(status_code=403, detail="Telemetry analyst access required.")
 
 def require_roles(*roles: UserRole):
     """Factory that returns a dependency checking the user has one of the given roles."""

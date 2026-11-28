@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useSiem } from "../../hooks/useSiem";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 const SUGGESTIONS = [
   "20 failed SSH logins from 185.220.101.45 in 2 minutes then a successful login",
   "User logged in from India at 9am then from UK 15 minutes later",
@@ -226,7 +228,7 @@ export function PlaybookPanel() {
     setStatus(null);
     try {
       const token = localStorage.getItem("siem_token");
-      const res = await fetch(`http://localhost:8000/api/playbooks/${selectedAlert}/generate`, {
+      const res = await fetch(`${API_BASE}/api/playbooks/${selectedAlert}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       });
@@ -243,7 +245,7 @@ export function PlaybookPanel() {
 
   const act = async (action) => {
     const token = localStorage.getItem("siem_token");
-    const res = await fetch(`http://localhost:8000/api/playbooks/${selectedAlert}/${action}`, {
+    const res = await fetch(`${API_BASE}/api/playbooks/${selectedAlert}/${action}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: action === "reject" ? JSON.stringify({ reason: "Rejected by analyst" }) : undefined,
