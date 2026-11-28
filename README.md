@@ -7,7 +7,7 @@
 [![React](https://img.shields.io/badge/frontend-React%20%2B%20Vite-61DAFB.svg)](https://react.dev/)
 [![SQLAlchemy](https://img.shields.io/badge/ORM-Async%20SQLAlchemy-red.svg)](https://www.sqlalchemy.org/)
 
-**SIEM AI Guardian** is a full-stack Security Information and Event Management (SIEM) platform. It combines high-throughput log ingestion, a 5-rule MITRE ATT&CK threat detection engine, and Google Gemini AI incident analysis.
+**SIEM AI Guardian** is a full-stack Security Information and Event Management (SIEM) platform. It combines structured log ingestion, a 5-rule MITRE ATT&CK threat detection engine, and Google Gemini AI incident analysis.
 
 ---
 
@@ -158,9 +158,6 @@ siem-ai-guardian/
 
 ---
 
-## 📜 License
-
-
 ### Backend regression tests
 
 From `backend/`, run `python -m pip install -r requirements-dev.txt` and
@@ -169,6 +166,7 @@ synthetic events.
 
 The disposable SOC regression exercises normalized JSON telemetry, rule and
 correlation alerts, ATT&CK mapping, investigation updates, playbook approval,
-and PDF export. Playbooks record decisions in memory. The approval route does
-not execute the suggested commands. Analyst and administrator roles can
-change alert and playbook state in configured-tenant mode.
+and PDF export. Analyst and administrator roles can record playbook decisions
+in configured-tenant mode. Those decisions are held in process memory and
+are cleared when the service restarts. The approval route records a decision
+and leaves command execution to the operator.
